@@ -53,10 +53,10 @@ tracks can proceed in parallel; admin tasks additionally need T05 (ImageKit) and
 | T01 | [T01-api-types.md](T01-api-types.md) | Hand-written API types from backend docs | ✅ done |
 | T02 | [T02-api-client.md](T02-api-client.md) | Axios client, CSRF interceptor, error normalizer | ✅ done |
 | T03 | [T03-session-guards.md](T03-session-guards.md) | Session provider, role helpers, route guards | ✅ done |
-| T04 | [T04-shared-ui.md](T04-shared-ui.md) | Pagination/Money/Badge/Rating/states/dialogs/toasts | ☐ todo |
+| T04 | [T04-shared-ui.md](T04-shared-ui.md) | Pagination/Money/Badge/Rating/states/dialogs/toasts | ✅ done |
 | T05 | [T05-imagekit-upload.md](T05-imagekit-upload.md) | Signed direct-to-ImageKit upload widget | ✅ done |
 | T06 | [T06-layout-shell.md](T06-layout-shell.md) | Storefront header/footer + admin sidebar shell | ✅ done |
-| T07 | [T07-auth-pages.md](T07-auth-pages.md) | Register/Login/logout + verify-email landings | ☐ todo |
+| T07 | [T07-auth-pages.md](T07-auth-pages.md) | Register/Login/logout + verify-email landings | ✅ done |
 | T08 | [T08-catalog.md](T08-catalog.md) | Home, product listing, category pages | ☐ todo |
 | T09 | [T09-product-detail.md](T09-product-detail.md) | PDP gallery, variant picker, add-to-cart | ☐ todo |
 | T10 | [T10-product-reviews.md](T10-product-reviews.md) | PDP reviews, write review, deep link | ☐ todo |
