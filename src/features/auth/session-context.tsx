@@ -10,8 +10,9 @@ import {
   useMemo,
   useState,
 } from "react";
-import { apiRequest } from "@/lib/api/client";
-import { clearCsrfToken } from "@/lib/api/csrf";
+import { apiRequest, normalizeApiError } from "@/lib/api/client";
+import { resetAuthCookies } from "@/lib/api/client";
+import { clearCsrfToken, getCsrfToken } from "@/lib/api/csrf";
 import { qk } from "@/lib/api/queryKeys";
 import { onSessionExpired } from "@/lib/api/session-events";
 import { getSession, ensureCsrfToken, logout as logoutRequest } from "./api";
@@ -45,6 +46,12 @@ export function SessionProvider({ children }: SessionProviderProps) {
 
   const user = sessionQuery.data?.user ?? null;
 
+  useEffect(() => {
+    if (!sessionQuery.isPending && user && !getCsrfToken()) {
+      void ensureCsrfToken().catch(() => undefined);
+    }
+  }, [sessionQuery.isPending, user]);
+
   const adminProbeQuery = useQuery({
     queryKey: ["admin-probe"],
     queryFn: async () => {
@@ -77,11 +84,18 @@ export function SessionProvider({ children }: SessionProviderProps) {
     setSigningOut(true);
     try {
       await ensureCsrfToken().catch(() => undefined);
-      await logoutRequest().catch(() => undefined);
+      try {
+        await logoutRequest();
+      } catch (error) {
+        const err = normalizeApiError(error);
+        if (err.status === 401 || err.status === 403) {
+          await resetAuthCookies();
+        }
+      }
       clearCsrfToken();
       queryClient.clear();
+      queryClient.setQueryData(qk.session, null);
       router.replace("/");
-      await queryClient.invalidateQueries();
     } finally {
       setSigningOut(false);
     }
