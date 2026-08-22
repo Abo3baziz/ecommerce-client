@@ -57,8 +57,8 @@ tracks can proceed in parallel; admin tasks additionally need T05 (ImageKit) and
 | T05 | [T05-imagekit-upload.md](T05-imagekit-upload.md) | Signed direct-to-ImageKit upload widget | ✅ done |
 | T06 | [T06-layout-shell.md](T06-layout-shell.md) | Storefront header/footer + admin sidebar shell | ✅ done |
 | T07 | [T07-auth-pages.md](T07-auth-pages.md) | Register/Login/logout + verify-email landings | ✅ done |
-| T08 | [T08-catalog.md](T08-catalog.md) | Home, product listing, category pages | ☐ todo |
-| T09 | [T09-product-detail.md](T09-product-detail.md) | PDP gallery, variant picker, add-to-cart | ☐ todo |
+| T08 | [T08-catalog.md](T08-catalog.md) | Home, product listing, category pages | ✅ done |
+| T09 | [T09-product-detail.md](T09-product-detail.md) | PDP gallery, variant picker, add-to-cart | ✅ done |
 | T10 | [T10-product-reviews.md](T10-product-reviews.md) | PDP reviews, write review, deep link | ☐ todo |
 | T11 | [T11-cart-checkout.md](T11-cart-checkout.md) | Cart page + checkout wizard → POST /orders | ☐ todo |
 | T12 | [T12-orders.md](T12-orders.md) | Order history + detail/timeline/snapshots | ☐ todo |

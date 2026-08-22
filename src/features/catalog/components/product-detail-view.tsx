@@ -157,12 +157,21 @@ function ProductBody({ product }: ProductBodyProps) {
 
   const addToCart = useMutation({
     mutationFn: addCartItem,
-    onSuccess: (cart) => {
+    onSuccess: (cart, variables) => {
       queryClient.setQueryData(qk.cart, cart);
-      toast.success("Added to cart", {
+      const variant = product.variants.find(
+        (v) => v.public_id === variables.variant_public_id,
+      );
+      const optionLabel = [variant?.color, variant?.size]
+        .filter((part): part is string => Boolean(part))
+        .join(" · ");
+      toast.success(`Added ${variables.quantity} × ${product.name}`, {
         description: (
           <>
-            Subtotal: <Money value={cart.subtotal} />
+            {optionLabel ? <span className="block">{optionLabel}</span> : null}
+            <span>
+              Subtotal: <Money value={cart.subtotal} />
+            </span>
           </>
         ),
         action: {
