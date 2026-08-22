@@ -22,6 +22,8 @@ export interface SessionContextValue {
   isLoading: boolean;
   isAdmin: boolean;
   adminProbePending: boolean;
+  isSuperAdmin: boolean;
+  superAdminProbePending: boolean;
   refreshSession: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -68,6 +70,26 @@ export function SessionProvider({ children }: SessionProviderProps) {
     refetchOnWindowFocus: false,
   });
 
+  // Sessions expose no role; super-admin status is a probe of a
+  // super-admin-only endpoint (200 vs 403). The backend always enforces
+  // real authorization — this only drives UI visibility.
+  const isAdminKnown = adminProbeQuery.data === true;
+  const superAdminProbeQuery = useQuery({
+    queryKey: ["super-admin-probe"],
+    queryFn: async () => {
+      await apiRequest({
+        url: "/admin/audit",
+        method: "GET",
+        params: { page: 1, limit: 1 },
+      });
+      return true;
+    },
+    enabled: user !== null && isAdminKnown,
+    staleTime: 10 * 60_000,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
   useEffect(() => {
     return onSessionExpired(() => {
       clearCsrfToken();
@@ -107,6 +129,9 @@ export function SessionProvider({ children }: SessionProviderProps) {
       isLoading: sessionQuery.isPending || signingOut,
       isAdmin: adminProbeQuery.data === true,
       adminProbePending: adminProbeQuery.isPending,
+      isSuperAdmin: superAdminProbeQuery.data === true,
+      superAdminProbePending:
+        adminProbeQuery.isPending || superAdminProbeQuery.isPending,
       refreshSession,
       signOut,
     }),
@@ -116,6 +141,8 @@ export function SessionProvider({ children }: SessionProviderProps) {
       signingOut,
       adminProbeQuery.data,
       adminProbeQuery.isPending,
+      superAdminProbeQuery.data,
+      superAdminProbeQuery.isPending,
       refreshSession,
       signOut,
     ],

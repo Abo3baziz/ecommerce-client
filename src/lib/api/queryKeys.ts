@@ -1,4 +1,5 @@
 import type {
+  AdminAuditListParams,
   AdminCategoryListParams,
   AdminOrderListParams,
   AdminProductListParams,
@@ -85,5 +86,7 @@ export const qk = {
 
     stats: (preset: StatsPeriodPreset) =>
       ["admin-stats", preset] as const,
+    audit: (params: AdminAuditListParams = {}) =>
+      ["admin-audit", params] as const,
   },
 };

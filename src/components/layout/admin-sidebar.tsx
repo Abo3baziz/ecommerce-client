@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   MessageSquareText,
   Package,
+  ScrollText,
   ShoppingCart,
   Store,
   Users,
@@ -14,13 +15,16 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AccountMenu } from "@/components/layout/account-menu";
+import { useSession } from "@/features/auth/session-context";
 
-const NAV_ITEMS: ReadonlyArray<{
+interface NavItem {
   href: string;
   label: string;
   icon: typeof LayoutDashboard;
   exact?: boolean;
-}> = [
+}
+
+const NAV_ITEMS: ReadonlyArray<NavItem> = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
@@ -30,8 +34,15 @@ const NAV_ITEMS: ReadonlyArray<{
   { href: "/admin/users", label: "Customers", icon: Users },
 ];
 
+// Super-admin-only section; hidden for regular admins via the session probe.
+const SUPER_ADMIN_NAV_ITEMS: ReadonlyArray<NavItem> = [
+  { href: "/admin/audit", label: "Audit log", icon: ScrollText },
+];
+
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { isSuperAdmin } = useSession();
+  const items = isSuperAdmin ? [...NAV_ITEMS, ...SUPER_ADMIN_NAV_ITEMS] : NAV_ITEMS;
 
   return (
     <div className="flex h-full flex-col">
@@ -40,7 +51,7 @@ export function AdminSidebar() {
         <span className="font-semibold">Admin</span>
       </div>
       <nav className="flex flex-1 flex-col gap-1 overflow-auto p-3" aria-label="Admin">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
+        {items.map(({ href, label, icon: Icon, exact }) => {
           const active = exact
             ? pathname === href
             : pathname === href || pathname.startsWith(`${href}/`);
@@ -80,12 +91,14 @@ export function AdminSidebar() {
 
 export function AdminMobileNav() {
   const pathname = usePathname();
+  const { isSuperAdmin } = useSession();
+  const items = isSuperAdmin ? [...NAV_ITEMS, ...SUPER_ADMIN_NAV_ITEMS] : NAV_ITEMS;
   return (
     <nav
       className="flex gap-1 overflow-x-auto border-b bg-background px-3 py-2 md:hidden"
       aria-label="Admin sections"
     >
-      {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
+      {items.map(({ href, label, icon: Icon, exact }) => {
         const active = exact
           ? pathname === href
           : pathname === href || pathname.startsWith(`${href}/`);
