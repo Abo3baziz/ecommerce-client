@@ -1,9 +1,14 @@
 import { apiRequest } from "@/lib/api/client";
 import type { ImageKitAuthParams } from "@/types/catalog";
 
-export async function fetchImageKitAuth(): Promise<ImageKitAuthParams> {
+export const ADMIN_IMAGEKIT_AUTH_PATH = "/admin/products/uploads/imagekit-auth";
+export const CUSTOMER_IMAGEKIT_AUTH_PATH = "/uploads/imagekit-auth";
+
+export async function fetchImageKitAuth(
+  authPath: string = ADMIN_IMAGEKIT_AUTH_PATH,
+): Promise<ImageKitAuthParams> {
   return apiRequest<ImageKitAuthParams>({
-    url: "/admin/products/uploads/imagekit-auth",
+    url: authPath,
   });
 }
 

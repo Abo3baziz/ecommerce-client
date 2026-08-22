@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
-import { ImageKitUpload } from "@/components/admin/imagekit-upload";
+import { ImageUploadDropzone } from "@/components/shared/image-upload";
 import { qk } from "@/lib/api/queryKeys";
 import {
   createVariantImage,
@@ -223,10 +223,13 @@ export function VariantImagesManager({
           >
             {addMutation.isPending ? "Adding…" : "Add URL"}
           </Button>
-          <ImageKitUpload
+          <ImageUploadDropzone
             disabled={addMutation.isPending}
-            onUploaded={(url) => {
-              form.setValue("image_url", url, { shouldValidate: true });
+            maxFiles={1}
+            onUploaded={(urls) => {
+              form.setValue("image_url", urls[0] ?? "", {
+                shouldValidate: urls.length > 0,
+              });
             }}
           />
         </div>

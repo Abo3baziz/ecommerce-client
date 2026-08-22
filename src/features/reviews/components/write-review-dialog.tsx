@@ -4,9 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RatingInput } from "@/components/shared/rating";
+import { ImageUploadDropzone } from "@/components/shared/image-upload";
+import { CUSTOMER_IMAGEKIT_AUTH_PATH } from "@/lib/api/imagekit";
 import { qk } from "@/lib/api/queryKeys";
 import { createReview } from "../api";
 import type { ApiError } from "@/types/envelopes";
@@ -32,23 +35,23 @@ const writeReviewSchema = z.object({
     .max(5, "Select a star rating"),
   title: z.string().trim().max(255, "Max 255 characters"),
   comment: z.string().trim().max(5000, "Max 5000 characters"),
-  images: z.array(
-    z.object({
-      url: z
-        .string()
-        .trim()
-        .url("Enter a valid URL (or leave the field empty)")
-        .or(z.literal("")),
-    }),
-  ),
 });
 
 type WriteReviewValues = z.infer<typeof writeReviewSchema>;
 
 const MAX_IMAGES = 5;
 
+function isHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function initialValues(): WriteReviewValues {
-  return { rating: 0, title: "", comment: "", images: [{ url: "" }] };
+  return { rating: 0, title: "", comment: "" };
 }
 
 interface WriteReviewDialogProps {
@@ -70,7 +73,27 @@ export function WriteReviewDialog({
     defaultValues: initialValues(),
   });
 
-  const imageArray = useFieldArray({ control: form.control, name: "images" });
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
+  const [manualUrls, setManualUrls] = useState<string[]>([]);
+  const [manualUrl, setManualUrl] = useState<string>("");
+  const [manualUrlInvalid, setManualUrlInvalid] = useState(false);
+  const photoCount = uploadedUrls.length + manualUrls.length;
+
+  function addManualUrl() {
+    const trimmed = manualUrl.trim();
+    if (trimmed === "" || photoCount >= MAX_IMAGES) return;
+    if (!isHttpUrl(trimmed)) {
+      setManualUrlInvalid(true);
+      return;
+    }
+    setManualUrls((prev) => [...prev, trimmed]);
+    setManualUrl("");
+    setManualUrlInvalid(false);
+  }
+
+  function removeManualUrl(url: string) {
+    setManualUrls((prev) => prev.filter((entry) => entry !== url));
+  }
 
   const mutation = useMutation({
     mutationFn: createReview,
@@ -80,6 +103,10 @@ export function WriteReviewDialog({
       });
       toast.success("Review submitted for moderation");
       form.reset(initialValues());
+      setUploadedUrls([]);
+      setManualUrls([]);
+      setManualUrl("");
+      setManualUrlInvalid(false);
       setSelectedRating(null);
       setCommentLength(0);
       setAlreadyReviewed(false);
@@ -104,9 +131,9 @@ export function WriteReviewDialog({
       rating: values.rating,
       title: values.title || undefined,
       comment: values.comment || undefined,
-      images: values.images
-        .map((image) => ({ image_url: image.url.trim() }))
-        .filter((image) => image.image_url !== ""),
+      images: [...uploadedUrls, ...manualUrls]
+        .slice(0, MAX_IMAGES)
+        .map((image_url) => ({ image_url })),
     });
   }
 
@@ -118,6 +145,10 @@ export function WriteReviewDialog({
           setAlreadyReviewed(false);
           setSelectedRating(null);
           setCommentLength(0);
+          setUploadedUrls([]);
+          setManualUrls([]);
+          setManualUrl("");
+          setManualUrlInvalid(false);
           form.reset(initialValues());
         }
         onOpenChange(next);
@@ -212,41 +243,68 @@ export function WriteReviewDialog({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Photos (URLs, optional)</Label>
-            {imageArray.fields.map((field, index) => (
-              <div key={field.id} className="flex items-center gap-2">
-                <Input
-                  placeholder="https://example.com/photo.jpg"
-                  aria-label={`Photo URL ${index + 1}`}
-                  {...form.register(`images.${index}.url` as const)}
-                />
-                {imageArray.fields.length > 1 ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Remove photo URL ${index + 1}`}
-                    onClick={() => imageArray.remove(index)}
+            <Label>Photos (optional, up to {MAX_IMAGES})</Label>
+            <ImageUploadDropzone
+              maxFiles={MAX_IMAGES - manualUrls.length}
+              authPath={CUSTOMER_IMAGEKIT_AUTH_PATH}
+              onUploaded={setUploadedUrls}
+              label="Add photos of the product"
+            />
+            {manualUrls.length > 0 ? (
+              <ul className="flex flex-wrap gap-1.5">
+                {manualUrls.map((url) => (
+                  <li
+                    key={url}
+                    className="flex items-center gap-1 rounded-full border bg-muted/50 py-0.5 pr-1 pl-2.5 text-xs text-muted-foreground"
                   >
-                    ×
-                  </Button>
-                ) : null}
-              </div>
-            ))}
-            {imageArray.fields.length < MAX_IMAGES ? (
+                    <span className="max-w-40 truncate" title={url}>
+                      {url}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${url}`}
+                      className="flex size-4 items-center justify-center rounded-full hover:bg-accent hover:text-foreground"
+                      onClick={() => removeManualUrl(url)}
+                    >
+                      <X className="size-3" aria-hidden />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <div className="flex items-center gap-2">
+              <Input
+                value={manualUrl}
+                placeholder="Or paste an image URL (https://…)"
+                aria-label="Photo URL"
+                aria-invalid={manualUrlInvalid}
+                disabled={photoCount >= MAX_IMAGES}
+                onChange={(event) => {
+                  setManualUrl(event.target.value);
+                  setManualUrlInvalid(false);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    addManualUrl();
+                  }
+                }}
+              />
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="self-start"
-                onClick={() => imageArray.append({ url: "" })}
+                disabled={
+                  manualUrl.trim() === "" || photoCount >= MAX_IMAGES
+                }
+                onClick={addManualUrl}
               >
-                Add another photo URL
+                Add
               </Button>
-            ) : null}
-            {typeof form.formState.errors.images?.message === "string" ? (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.images.message}
+            </div>
+            {manualUrlInvalid ? (
+              <p className="text-xs text-destructive">
+                Enter a valid http(s) image URL.
               </p>
             ) : null}
           </div>
@@ -259,6 +317,10 @@ export function WriteReviewDialog({
                 setAlreadyReviewed(false);
                 setSelectedRating(null);
                 setCommentLength(0);
+                setUploadedUrls([]);
+                setManualUrls([]);
+                setManualUrl("");
+                setManualUrlInvalid(false);
                 form.reset(initialValues());
                 onOpenChange(false);
               }}
