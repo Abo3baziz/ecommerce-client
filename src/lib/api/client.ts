@@ -4,6 +4,7 @@ import { isEnvelope, hasPagination } from "@/types/envelopes";
 import type { ApiError, ListPagination } from "@/types/envelopes";
 import { http } from "./axios-instance";
 import {
+  clearCsrfToken,
   fetchCsrfToken,
   getCsrfToken,
 } from "./csrf";
@@ -78,7 +79,22 @@ function isCsrfFailure(error: AxiosError): boolean {
   return typeof flatMessage === "string" && /csrf/i.test(flatMessage);
 }
 
-type RetriableConfig = AxiosRequestConfig & { _csrfRetried?: boolean };
+type RetriableConfig = AxiosRequestConfig & {
+  _csrfRetried?: boolean;
+  _authResetRetried?: boolean;
+  _csrfProbe?: boolean;
+};
+
+export async function resetAuthCookies(): Promise<void> {
+  try {
+    await fetch("/api/auth-cookie-reset", {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch {
+    return;
+  }
+}
 
 http.interceptors.request.use((config) => {
   const method = config.method?.toLowerCase() ?? "";
@@ -109,7 +125,23 @@ http.interceptors.response.use(
       config._csrfRetried = true;
       try {
         await fetchCsrfToken();
-      } catch {
+      } catch (refreshError) {
+        const refreshStatus = normalizeApiError(refreshError).status;
+        if (refreshStatus === 401 || refreshStatus === 403) {
+          clearCsrfToken();
+          await resetAuthCookies();
+          emitSessionExpired();
+          const method = config.method?.toLowerCase() ?? "";
+          const url = config.url ?? "";
+          if (
+            method === "post" &&
+            url.startsWith("/auth/") &&
+            !config._authResetRetried
+          ) {
+            config._authResetRetried = true;
+            return http.request(config);
+          }
+        }
         throw normalizeApiError(error);
       }
       const token = getCsrfToken();
@@ -123,7 +155,7 @@ http.interceptors.response.use(
       return http.request(config);
     }
 
-    if (status === 401) {
+    if (status === 401 && !(config as RetriableConfig | undefined)?._csrfProbe) {
       emitSessionExpired();
     }
 

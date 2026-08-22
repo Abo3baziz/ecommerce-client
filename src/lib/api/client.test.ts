@@ -309,6 +309,81 @@ describe("CSRF failure handling", () => {
   });
 });
 
+describe("stale-session CSRF recovery", () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("resets cookies and replays an /auth POST once when the token cannot be refreshed", async () => {
+    let loginAttempts = 0;
+    mock
+      .onPost("/auth/login")
+      .replyOnce(() => {
+        loginAttempts += 1;
+        return [403, { success: false, message: "Invalid CSRF token" }];
+      })
+      .onPost("/auth/login")
+      .reply((config) => {
+        loginAttempts += 1;
+        const sent = headersAsRecord(config);
+        expect(sent).not.toHaveProperty("x-csrf-token");
+        return [200, { public_id: "usr_1", email_verified: true }];
+      });
+    mock
+      .onGet("/auth/csrf-token")
+      .reply(401, { success: false, message: "Authentication required" });
+
+    const result = await apiRequest<{ public_id: string }>({
+      method: "post",
+      url: "/auth/login",
+    });
+
+    expect(result.public_id).toBe("usr_1");
+    expect(loginAttempts).toBe(2);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/auth-cookie-reset",
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
+  it("surfaces the error after reset for non-auth writes without replaying them", async () => {
+    const listener = vi.fn();
+    const unsubscribe = onSessionExpired(listener);
+
+    let attempts = 0;
+    mock.onPatch("/users/me").reply(() => {
+      attempts += 1;
+      return [403, { success: false, message: "Invalid CSRF token" }];
+    });
+    mock
+      .onGet("/auth/csrf-token")
+      .reply(401, { success: false, message: "Authentication required" });
+
+    await expect(
+      apiRequest({ method: "patch", url: "/users/me" }),
+    ).rejects.toMatchObject({
+      status: 403,
+      message: "Invalid CSRF token",
+    });
+
+    expect(attempts).toBe(1);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/auth-cookie-reset",
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    unsubscribe();
+  });
+});
+
 describe("session expiry events", () => {
   it("emits session:expired exactly once per 401 response", async () => {
     const listener = vi.fn();
