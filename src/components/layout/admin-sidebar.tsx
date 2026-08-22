@@ -10,6 +10,7 @@ import {
   ScrollText,
   ShoppingCart,
   Store,
+  TrendingUp,
   Users,
   Warehouse,
 } from "lucide-react";
@@ -34,9 +35,14 @@ const NAV_ITEMS: ReadonlyArray<NavItem> = [
   { href: "/admin/users", label: "Customers", icon: Users },
 ];
 
-// Super-admin-only section; hidden for regular admins via the session probe.
+// Super-admin-only sections; hidden for regular admins via the session probe.
 const SUPER_ADMIN_NAV_ITEMS: ReadonlyArray<NavItem> = [
   { href: "/admin/audit", label: "Audit log", icon: ScrollText },
+];
+
+const ANALYTICS_NAV_ITEMS: ReadonlyArray<NavItem> = [
+  { href: "/admin/analytics", label: "Overview", icon: TrendingUp, exact: true },
+  { href: "/admin/analytics/expenses", label: "Expenses", icon: Warehouse },
 ];
 
 export function AdminSidebar() {
@@ -72,6 +78,34 @@ export function AdminSidebar() {
             </Link>
           );
         })}
+        {isSuperAdmin ? (
+          <div className="mt-3 border-t pt-2">
+            <p className="px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Analytics
+            </p>
+            {ANALYTICS_NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
+              const active = exact
+                ? pathname === href
+                : pathname === href || pathname.startsWith(`${href}/`);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  <Icon className="size-4 shrink-0" aria-hidden />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        ) : null}
       </nav>
       <div className="border-t p-3">
         <Link
@@ -92,7 +126,9 @@ export function AdminSidebar() {
 export function AdminMobileNav() {
   const pathname = usePathname();
   const { isSuperAdmin } = useSession();
-  const items = isSuperAdmin ? [...NAV_ITEMS, ...SUPER_ADMIN_NAV_ITEMS] : NAV_ITEMS;
+  const items = isSuperAdmin
+    ? [...NAV_ITEMS, ...SUPER_ADMIN_NAV_ITEMS, ...ANALYTICS_NAV_ITEMS]
+    : NAV_ITEMS;
   return (
     <nav
       className="flex gap-1 overflow-x-auto border-b bg-background px-3 py-2 md:hidden"

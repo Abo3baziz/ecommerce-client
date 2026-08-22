@@ -1,4 +1,5 @@
 import type {
+  AdminAnalyticsOverviewParams,
   AdminAuditListParams,
   AdminCategoryListParams,
   AdminOrderListParams,
@@ -10,6 +11,7 @@ import type {
   CustomerOrderListParams,
   InventoryListParams,
   MyReviewListParams,
+  OperatingExpenseListParams,
   ProductListParams,
   ProductReviewListParams,
   StatsPeriodPreset,
@@ -88,5 +90,9 @@ export const qk = {
       ["admin-stats", preset] as const,
     audit: (params: AdminAuditListParams = {}) =>
       ["admin-audit", params] as const,
+    analyticsOverview: (params: AdminAnalyticsOverviewParams = {}) =>
+      ["admin-analytics-overview", params] as const,
+    analyticsExpenses: (params: OperatingExpenseListParams = {}) =>
+      ["admin-analytics-expenses", params] as const,
   },
 };

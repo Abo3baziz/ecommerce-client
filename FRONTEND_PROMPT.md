@@ -125,7 +125,8 @@ Write one normalizer that turns both into a typed `ApiError { status, code?, mes
 /verify-email              Landing (?token=...)
 /verify-email-change       Landing (?token=...)   [email-change verify]
  /login  /register  /forgot-password
-/admin                     Dashboard
+ /admin                     Dashboard
+ /admin/analytics           Analytics overview + expense ledger (SUPER_ADMIN only)
 /admin/products            Product list + editor (tabs: details, variants, images)
 /admin/categories          Categories + product assignment
 /admin/inventory           Stock dashboard
@@ -253,6 +254,6 @@ Table: name, email, phone, status, email_verified, created_at; search, status fi
 ## 12. Out of Scope (do NOT build)
 
 - ~~Password-reset screens~~ — **implemented in T23** (`/forgot-password` wizard: email → 6-digit OTP → new password; the emailed link fallback targets the backend-served static page). See `tasks/T23-password-reset-otp.md`.
-- Wishlist, loyalty points, recommendations, analytics dashboards — excluded from the backend by design.
+- Wishlist, loyalty points, recommendations — excluded from the backend by design. Platform-level analytics dashboards are now implemented (see `tasks/T25-analytics-section.md`, super-admin only).
 - Real payment gateways — only the `mock` method exists; do not integrate Stripe/etc.
 - Webhooks/streaming — none exist.

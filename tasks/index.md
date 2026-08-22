@@ -74,6 +74,7 @@ tracks can proceed in parallel; admin tasks additionally need T05 (ImageKit) and
 | T22 | [T22-admin-audit-logging.md](T22-admin-audit-logging.md) | Append-only admin audit trail (auto-middleware + auth events, super-admin viewer) | ✅ done |
 | T23 | [T23-password-reset-otp.md](T23-password-reset-otp.md) | Password reset via emailed OTP + link fallback (wizard `/forgot-password`, backend OTP verify) | ✅ done |
 | T24 | [T24-tooltip-icon-buttons.md](T24-tooltip-icon-buttons.md) | Hover labels for all icon-only buttons (shadcn tooltip + shared wrapper) | ✅ done |
+| T25 | [T25-analytics-section.md](T25-analytics-section.md) | Analytics section: P&L, expenses ledger, product/customer insights (SUPER_ADMIN only) | ✅ done |
 
 ## Definition of Done (applies to every task)
 

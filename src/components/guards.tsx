@@ -103,3 +103,20 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   }
   return <>{children}</>;
 }
+
+// Super-admin-only surface (Analytics). Sessions expose no role, so the gate
+// relies on the super-admin probe; the backend independently returns 403 to
+// every analytics API call from non-super-admins.
+export function SuperAdminGate({ children }: { children: React.ReactNode }) {
+  const { isSuperAdmin, superAdminProbePending } = useSession();
+
+  if (superAdminProbePending) {
+    return <GateLoader />;
+  }
+  if (!isSuperAdmin) {
+    return (
+      <ForbiddenCard message="This section is only available to the platform super admin." />
+    );
+  }
+  return <>{children}</>;
+}
