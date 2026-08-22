@@ -68,6 +68,9 @@ Verify with lint → typecheck → test. No CI exists in this repo.
   ```
 
 - Split unrelated work into separate commits (see history: fixes vs features vs docs).
+- Task files (`tasks/T##-*.md`, index status flips) are committed together with the
+  feature's FINAL commit once the task is done — never commit planning docs for
+  unfinished work.
 - Stage only intended files; never commit `.env*`, secrets, or build output.
 
 ## Task workflow
