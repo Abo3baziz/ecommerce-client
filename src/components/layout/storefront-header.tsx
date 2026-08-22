@@ -1,0 +1,139 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { Search, ShoppingCart, Store } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { AccountMenu } from "@/components/layout/account-menu";
+import { useSession } from "@/features/auth/session-context";
+import { useCategories } from "@/features/catalog/hooks";
+import { useCart } from "@/features/cart/hooks";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+
+export function StorefrontHeader() {
+  const router = useRouter();
+  const [inputValue, setInputValue] = useState("");
+  const debounced = useDebouncedValue(inputValue, 300);
+  const lastPushed = useRef<string | null>(null);
+  const categories = useCategories();
+  const { user } = useSession();
+
+  useEffect(() => {
+    const query = debounced.trim();
+    if (!query || lastPushed.current === query) {
+      return;
+    }
+    lastPushed.current = query;
+    router.push(`/products?search=${encodeURIComponent(query)}`);
+  }, [debounced, router]);
+
+  function submitSearch(event: React.FormEvent) {
+    event.preventDefault();
+    const query = inputValue.trim();
+    if (!query) {
+      return;
+    }
+    lastPushed.current = query;
+    router.push(`/products?search=${encodeURIComponent(query)}`);
+  }
+
+  return (
+    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-3 px-4">
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-2 text-lg font-semibold"
+        >
+          <Store className="size-5" aria-hidden />
+          <span className="hidden sm:inline">Storefront</span>
+        </Link>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="shrink-0">
+              Categories
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            className="max-h-80 w-56 overflow-auto"
+          >
+            {categories.isLoading ? (
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                Loading…
+              </div>
+            ) : (categories.data ?? []).length === 0 ? (
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                No categories yet
+              </div>
+            ) : (
+              (categories.data ?? []).map((category) => (
+                <DropdownMenuItem key={category.public_id} asChild>
+                  <Link href={`/categories/${category.public_id}`}>
+                    {category.name}
+                  </Link>
+                </DropdownMenuItem>
+              ))
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <form
+          role="search"
+          className="flex min-w-0 flex-1 items-center"
+          onSubmit={submitSearch}
+        >
+          <div className="relative min-w-0 flex-1">
+            <Search
+              className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
+            <Input
+              type="search"
+              value={inputValue}
+              onChange={(event) => setInputValue(event.target.value)}
+              placeholder="Search products…"
+              aria-label="Search products"
+              className="pl-8"
+            />
+          </div>
+        </form>
+
+        <Button
+          asChild
+          variant="ghost"
+          size="icon"
+          className="relative shrink-0"
+          aria-label="View cart"
+        >
+          <Link href="/cart">
+            <ShoppingCart className="size-4" aria-hidden />
+            {user ? <CartBadge /> : null}
+          </Link>
+        </Button>
+
+        <AccountMenu />
+      </div>
+    </header>
+  );
+}
+
+function CartBadge() {
+  const { data: cart } = useCart();
+  if (!cart || cart.items_count === 0) {
+    return null;
+  }
+  return (
+    <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+      {cart.items_count > 99 ? "99+" : cart.items_count}
+    </span>
+  );
+}
