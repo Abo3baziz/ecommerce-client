@@ -70,6 +70,10 @@ tracks can proceed in parallel; admin tasks additionally need T05 (ImageKit) and
 | T18 | [T18-quality-polish.md](T18-quality-polish.md) | Quality bar audit + endpoint coverage check | ✅ done |
 | T19 | [T19-paymob-checkout.md](T19-paymob-checkout.md) | Paymob checkout flow (Unified Checkout redirect, result page, pending states) | ⏳ todo |
 | T20 | [T20-admin-dashboard-stats.md](T20-admin-dashboard-stats.md) | Admin dashboard statistics (backend `/admin/stats` aggregate + recharts dashboard) | ✅ done |
+| T21 | [T21-manage-reserve-quantity.md](T21-manage-reserve-quantity.md) | Manual reserve/release per variant (guarded backend endpoint + shared dialog) | ✅ done |
+| T22 | [T22-admin-audit-logging.md](T22-admin-audit-logging.md) | Append-only admin audit trail (auto-middleware + auth events, super-admin viewer) | 📝 planned |
+| T23 | [T23-password-reset-otp.md](T23-password-reset-otp.md) | Password reset via emailed OTP + link fallback (wizard `/forgot-password`, backend OTP verify) | 📝 planned |
+| T24 | [T24-tooltip-icon-buttons.md](T24-tooltip-icon-buttons.md) | Hover labels for all icon-only buttons (shadcn tooltip + shared wrapper) | 📝 planned |
 
 ## Definition of Done (applies to every task)
 

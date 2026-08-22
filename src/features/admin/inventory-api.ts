@@ -6,6 +6,7 @@ import type {
   InventoryListParams,
   InventoryRecord,
   Paginated,
+  ReserveInventoryInput,
 } from "@/types";
 
 export async function listAdminInventory(
@@ -38,12 +39,31 @@ export async function createAdminInventoryRecord(
   });
 }
 
+export async function getAdminInventory(
+  variantId: string,
+): Promise<InventoryRecord> {
+  return apiRequest<InventoryRecord>({
+    url: `/admin/inventory/${variantId}`,
+  });
+}
+
 export async function adjustAdminInventory(
   variantId: string,
   input: AdjustInventoryInput,
 ): Promise<InventoryRecord> {
   return apiRequest<InventoryRecord>({
     url: `/admin/inventory/${variantId}`,
+    method: "PATCH",
+    data: input,
+  });
+}
+
+export async function reserveAdminInventory(
+  variantId: string,
+  input: ReserveInventoryInput,
+): Promise<InventoryRecord> {
+  return apiRequest<InventoryRecord>({
+    url: `/admin/inventory/${variantId}/reserve`,
     method: "PATCH",
     data: input,
   });

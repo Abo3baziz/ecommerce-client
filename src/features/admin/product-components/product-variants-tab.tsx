@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronRight,
   Images,
+  Lock,
   Pencil,
   Plus,
   Trash2,
@@ -49,6 +50,7 @@ import {
 import { useUpdateSearchParams } from "@/features/admin/product-components/use-update-search-params";
 import { VariantDialog } from "@/features/admin/product-components/variant-dialog";
 import { VariantImagesManager } from "@/features/admin/product-components/variant-images-manager";
+import { ReserveInventoryDialog } from "@/features/admin/inventory-components/reserve-inventory-dialog";
 
 const VARIANT_SORTS = ["sku", "price", "created_at", "updated_at"] as const;
 type VariantSortField = (typeof VARIANT_SORTS)[number];
@@ -87,6 +89,9 @@ export function ProductVariantsTab({ productId }: { productId: string }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingVariant, setEditingVariant] = useState<AdminVariant | null>(null);
   const [pendingDelete, setPendingDelete] = useState<AdminVariant | null>(null);
+  const [reservingVariant, setReservingVariant] = useState<AdminVariant | null>(
+    null,
+  );
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const query = useQuery({
@@ -260,6 +265,7 @@ export function ProductVariantsTab({ productId }: { productId: string }) {
                     setDialogOpen(true);
                   }}
                   onDelete={() => setPendingDelete(variant)}
+                  onReserve={() => setReservingVariant(variant)}
                 />
               ))}
             </TableBody>
@@ -298,6 +304,15 @@ export function ProductVariantsTab({ productId }: { productId: string }) {
           await confirmDelete().catch(() => undefined);
         }}
       />
+
+      <ReserveInventoryDialog
+        open={reservingVariant !== null}
+        variantPublicId={reservingVariant?.public_id ?? ""}
+        title={reservingVariant?.sku ?? undefined}
+        onOpenChange={(open) => {
+          if (!open) setReservingVariant(null);
+        }}
+      />
     </div>
   );
 }
@@ -310,6 +325,7 @@ function VariantRows({
   onToggleExpand,
   onEdit,
   onDelete,
+  onReserve,
 }: {
   productId: string;
   variant: AdminVariant;
@@ -318,6 +334,7 @@ function VariantRows({
   onToggleExpand: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onReserve: () => void;
 }) {
   return (
     <>
@@ -359,6 +376,15 @@ function VariantRows({
               title="Manage images"
             >
               <Images className="size-4" aria-hidden />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={onReserve}
+              title="Manage reserve"
+            >
+              <Lock className="size-4" aria-hidden />
             </Button>
             <Button
               type="button"

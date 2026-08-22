@@ -44,3 +44,8 @@ export interface AdjustInventoryInput {
   reorder_level?: number | null;
   reason?: string;
 }
+
+export interface ReserveInventoryInput {
+  change: number;
+  reason?: string;
+}
