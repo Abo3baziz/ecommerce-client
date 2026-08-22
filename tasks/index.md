@@ -67,7 +67,7 @@ tracks can proceed in parallel; admin tasks additionally need T05 (ImageKit) and
 | T15 | [T15-admin-products.md](T15-admin-products.md) | Admin dashboard + products editor tabs | ✅ done |
 | T16 | [T16-admin-categories-inventory.md](T16-admin-categories-inventory.md) | Categories CRUD, inventory dashboard | ✅ done |
 | T17 | [T17-admin-orders-reviews-users.md](T17-admin-orders-reviews-users.md) | Orders transitions, moderation, customers | ✅ done |
-| T18 | [T18-quality-polish.md](T18-quality-polish.md) | Quality bar audit + endpoint coverage check | ☐ todo |
+| T18 | [T18-quality-polish.md](T18-quality-polish.md) | Quality bar audit + endpoint coverage check | ✅ done |
 
 ## Definition of Done (applies to every task)
 

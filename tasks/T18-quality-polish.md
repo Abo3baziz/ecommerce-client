@@ -101,5 +101,12 @@ Known constraints (documented deviations):
   controls render for all admins and a non-super actor's 403 is surfaced gracefully.
 - Product list rows carry no image payload → cards/thumbnails render styled placeholders
   (PDP/gallery/cart/review surfaces use real image URLs).
-- Live E2E against the running backend still to be exercised manually (backend was not
-  running during this pass).
+- Live E2E re-verified 2026-08-22 against the running backend: register → auto sign-in,
+ CSRF fetch, logout, re-login, and stale-session CSRF recovery all pass. Order/review/
+ inventory CRUD cycles still require seeded catalog + admin data in the dev DB.
+- Stale-session deadlock fix: a zombie session cookie made login permanently fail with
+ "Invalid CSRF token" (CSRF middleware checks any session-carrying write; token endpoint
+ requires a valid session). Client now detects refetch-failure, resets cookies via
+ same-origin `/api/auth-cookie-reset`, and replays `/auth/*` POSTs once (T02/T03 files).
+- Unused Zustand mini-cart store removed in the dead-code sweep; add-to-cart feedback is
+ the sonner toast with line summary + subtotal + "View cart" action.
