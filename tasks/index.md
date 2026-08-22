@@ -60,13 +60,13 @@ tracks can proceed in parallel; admin tasks additionally need T05 (ImageKit) and
 | T08 | [T08-catalog.md](T08-catalog.md) | Home, product listing, category pages | ✅ done |
 | T09 | [T09-product-detail.md](T09-product-detail.md) | PDP gallery, variant picker, add-to-cart | ✅ done |
 | T10 | [T10-product-reviews.md](T10-product-reviews.md) | PDP reviews, write review, deep link | ✅ done |
-| T11 | [T11-cart-checkout.md](T11-cart-checkout.md) | Cart page + checkout wizard → POST /orders | ☐ todo |
-| T12 | [T12-orders.md](T12-orders.md) | Order history + detail/timeline/snapshots | ☐ todo |
-| T13 | [T13-account-security.md](T13-account-security.md) | Profile/password/email/phone/delete account | ☐ todo |
-| T14 | [T14-account-addresses-sessions.md](T14-account-addresses-sessions.md) | Address book, My reviews, sessions | ☐ todo |
-| T15 | [T15-admin-products.md](T15-admin-products.md) | Admin dashboard + products editor tabs | ☐ todo |
-| T16 | [T16-admin-categories-inventory.md](T16-admin-categories-inventory.md) | Categories CRUD, inventory dashboard | ☐ todo |
-| T17 | [T17-admin-orders-reviews-users.md](T17-admin-orders-reviews-users.md) | Orders transitions, moderation, customers | ☐ todo |
+| T11 | [T11-cart-checkout.md](T11-cart-checkout.md) | Cart page + checkout wizard → POST /orders | ✅ done |
+| T12 | [T12-orders.md](T12-orders.md) | Order history + detail/timeline/snapshots | ✅ done |
+| T13 | [T13-account-security.md](T13-account-security.md) | Profile/password/email/phone/delete account | ✅ done |
+| T14 | [T14-account-addresses-sessions.md](T14-account-addresses-sessions.md) | Address book, My reviews, sessions | ✅ done |
+| T15 | [T15-admin-products.md](T15-admin-products.md) | Admin dashboard + products editor tabs | ✅ done |
+| T16 | [T16-admin-categories-inventory.md](T16-admin-categories-inventory.md) | Categories CRUD, inventory dashboard | ✅ done |
+| T17 | [T17-admin-orders-reviews-users.md](T17-admin-orders-reviews-users.md) | Orders transitions, moderation, customers | ✅ done |
 | T18 | [T18-quality-polish.md](T18-quality-polish.md) | Quality bar audit + endpoint coverage check | ☐ todo |
 
 ## Definition of Done (applies to every task)
