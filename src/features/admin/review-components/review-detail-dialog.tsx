@@ -31,13 +31,15 @@ export function ReviewDetailDialog({
           <DialogTitle className="pr-6">
             {review.title ?? `Review for ${review.product_name}`}
           </DialogTitle>
-          <DialogDescription className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Rating value={review.rating} />
-            <span>{formatDateTime(review.created_at)}</span>
+            <DialogDescription>
+              {formatDateTime(review.created_at)}
+            </DialogDescription>
             {review.deleted_at ? (
               <Badge variant="outline">deleted</Badge>
             ) : null}
-          </DialogDescription>
+          </div>
         </DialogHeader>
 
         <div className="flex flex-col gap-4 text-sm">
