@@ -172,7 +172,6 @@ export default function AccountReviewsPage() {
           {data && data.reviews.length > 0 && data.pagination.has_more ? (
             <PaginationFromReviews
               pagination={{ page: data.pagination.page, has_more: true }}
-              page={page}
               onPageChange={setPage}
             />
           ) : null}

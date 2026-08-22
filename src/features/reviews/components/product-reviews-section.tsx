@@ -202,7 +202,6 @@ export function ProductReviewsSection({ productId }: ProductReviewsSectionProps)
           </div>
           <PaginationFromReviews
             className="mt-6"
-            page={reviewsQuery.data.pagination.page}
             pagination={{
               page: reviewsQuery.data.pagination.page,
               has_more: reviewsQuery.data.pagination.has_more,

@@ -476,7 +476,6 @@ function ReviewsTable() {
           </Table>
           {query.data ? (
             <PaginationFromReviews
-              page={query.data.pagination.page}
               pagination={{
                 page: query.data.pagination.page,
                 has_more: query.data.pagination.has_more,

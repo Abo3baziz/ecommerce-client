@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +41,34 @@ interface RatingInputProps {
 }
 
 export function RatingInput({ value, onChange, disabled }: RatingInputProps) {
+  const starRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  function focusStar(star: number): void {
+    const clamped = Math.min(5, Math.max(1, star));
+    starRefs.current[clamped - 1]?.focus();
+  }
+
+  function handleKeyDown(
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    star: number,
+  ): void {
+    let next: number | null = null;
+    if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+      next = Math.min(5, star + 1);
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+      next = Math.max(1, star - 1);
+    } else if (event.key === "Home") {
+      next = 1;
+    } else if (event.key === "End") {
+      next = 5;
+    }
+    if (next !== null) {
+      event.preventDefault();
+      onChange(next);
+      focusStar(next);
+    }
+  }
+
   return (
     <div
       role="radiogroup"
@@ -49,12 +78,16 @@ export function RatingInput({ value, onChange, disabled }: RatingInputProps) {
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
+          ref={(el) => {
+            starRefs.current[star - 1] = el;
+          }}
           type="button"
           role="radio"
           aria-checked={value === star}
           aria-label={`${star} star${star > 1 ? "s" : ""}`}
           disabled={disabled}
           onClick={() => onChange(star)}
+          onKeyDown={(event) => handleKeyDown(event, star)}
           className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Star

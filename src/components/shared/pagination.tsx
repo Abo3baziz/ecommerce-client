@@ -13,7 +13,7 @@ export interface PaginationProps {
   className?: string;
 }
 
-function pageWindow(page: number, totalPages: number): number[] {
+export function pageWindow(page: number, totalPages: number): number[] {
   const windowSize = 5;
   let start = Math.max(1, page - Math.floor(windowSize / 2));
   const end = Math.min(totalPages, start + windowSize - 1);
@@ -25,6 +25,23 @@ function pageWindow(page: number, totalPages: number): number[] {
   return pages;
 }
 
+export function resolveBounds(
+  page: number,
+  opts: {
+    totalPages?: number;
+    hasNext?: boolean;
+    hasPrev?: boolean;
+    hasMore?: boolean;
+  },
+): { canPrev: boolean; canNext: boolean } {
+  const canPrev = opts.hasPrev ?? page > 1;
+  const canNext =
+    opts.hasNext ??
+    opts.hasMore ??
+    (opts.totalPages !== undefined ? page < opts.totalPages : false);
+  return { canPrev, canNext };
+}
+
 export function Pagination({
   page,
   totalPages,
@@ -34,9 +51,12 @@ export function Pagination({
   onPageChange,
   className,
 }: PaginationProps) {
-  const canPrev = hasPrev ?? page > 1;
-  const canNext =
-    hasNext ?? hasMore ?? (totalPages !== undefined ? page < totalPages : false);
+  const { canPrev, canNext } = resolveBounds(page, {
+    totalPages,
+    hasNext,
+    hasPrev,
+    hasMore,
+  });
 
   const numbered =
     totalPages !== undefined && Number.isFinite(totalPages) && totalPages > 0;
@@ -120,7 +140,9 @@ export function PaginationFromStandard(
 }
 
 export function PaginationFromReviews(
-  props: Omit<PaginationProps, "hasMore"> & { pagination: ReviewsPaginationData },
+  props: Omit<PaginationProps, "page" | "hasMore"> & {
+    pagination: ReviewsPaginationData;
+  },
 ) {
   const { pagination, ...rest } = props;
   return (
