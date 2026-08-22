@@ -124,7 +124,7 @@ Write one normalizer that turns both into a typed `ApiError { status, code?, mes
 /account/sessions          Devices & sessions
 /verify-email              Landing (?token=...)
 /verify-email-change       Landing (?token=...)   [email-change verify]
-/login  /register
+ /login  /register  /forgot-password
 /admin                     Dashboard
 /admin/products            Product list + editor (tabs: details, variants, images)
 /admin/categories          Categories + product assignment
@@ -252,7 +252,7 @@ Table: name, email, phone, status, email_verified, created_at; search, status fi
 
 ## 12. Out of Scope (do NOT build)
 
-- Password-reset screens: `POST /auth/password-reset*` are **documented but not implemented** server-side. Skip them entirely (do not link a reset flow).
+- ~~Password-reset screens~~ — **implemented in T23** (`/forgot-password` wizard: email → 6-digit OTP → new password; the emailed link fallback targets the backend-served static page). See `tasks/T23-password-reset-otp.md`.
 - Wishlist, loyalty points, recommendations, analytics dashboards — excluded from the backend by design.
 - Real payment gateways — only the `mock` method exists; do not integrate Stripe/etc.
 - Webhooks/streaming — none exist.

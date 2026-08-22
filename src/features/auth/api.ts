@@ -82,6 +82,43 @@ export async function resendEmailVerification(): Promise<MessageResponse> {
   });
 }
 
+export async function requestPasswordReset(
+  email: string,
+): Promise<MessageResponse> {
+  return apiRequest<MessageResponse>({
+    url: "/auth/password-reset",
+    method: "POST",
+    data: { email },
+  });
+}
+
+export interface OtpExchangeResult {
+  reset_token: string;
+}
+
+export async function verifyOtpPasswordReset(
+  email: string,
+  code: string,
+): Promise<OtpExchangeResult> {
+  const result = await apiRequest<OtpExchangeResult>({
+    url: "/auth/password-reset/otp/verify",
+    method: "POST",
+    data: { email, code },
+  });
+  return { reset_token: result.reset_token };
+}
+
+export async function completePasswordReset(
+  resetToken: string,
+  newPassword: string,
+): Promise<void> {
+  await apiRequest<void>({
+    url: "/auth/password-reset/verify",
+    method: "POST",
+    data: { token: resetToken, new_password: newPassword },
+  });
+}
+
 export async function verifyEmailChange(
   token: string,
 ): Promise<EmailChangeVerifyResponse> {
