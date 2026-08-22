@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, X } from "lucide-react";
@@ -55,9 +55,15 @@ function PasswordChecklist({ password }: { password: string }) {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { refreshSession } = useSession();
   const [rootError, setRootError] = useState<string | null>(null);
   const [password, setPassword] = useState("");
+
+  const nextPath = (() => {
+    const from = searchParams.get("from");
+    return from && from.startsWith("/") ? from : "/";
+  })();
 
   const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
@@ -77,7 +83,7 @@ export default function RegisterPage() {
       await fetchCsrfToken();
       await refreshSession();
       toast.success("Account created — check your inbox to verify your email.");
-      router.replace("/");
+      router.replace(nextPath);
     } catch (error) {
       const err = error as ApiError;
       if (err.status === 409) {
