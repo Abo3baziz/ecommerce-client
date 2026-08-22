@@ -127,7 +127,7 @@ function VerifyEmailInner() {
           </Button>
         ) : null}
 
-        {state === "expired" &&
+        {(state === "expired" || state === "unknown") &&
         resend !== "sent" &&
         resend !== "already" ? (
           <>
@@ -156,6 +156,12 @@ function VerifyEmailInner() {
         ) : null}
         {resend === "rate-limited" ? (
           <p>Too many requests. Please wait before trying again.</p>
+        ) : null}
+        {resend === "failed" ? (
+          <p className="text-destructive">
+            Could not send the email. Make sure you are signed in with the
+            account you registered, then try again.
+          </p>
         ) : null}
 
         <Link href="/" className="underline underline-offset-4">
