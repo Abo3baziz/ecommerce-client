@@ -112,7 +112,7 @@ export function ProductImagesTab({ productId }: { productId: string }) {
     },
   });
 
-  const images = query.data ? sortedByOrder(query.data) : [];
+  const images = query.data ? sortedByOrder(query.data.data) : [];
 
   return (
     <div className="flex flex-col gap-4">

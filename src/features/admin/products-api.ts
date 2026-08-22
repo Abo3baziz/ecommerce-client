@@ -158,9 +158,11 @@ export async function deleteAdminVariant(
 
 export async function listProductImages(
   productId: string,
-): Promise<AdminProductImage[]> {
-  return apiRequest<AdminProductImage[]>({
+): Promise<Paginated<AdminProductImage>> {
+  // The endpoint is paginated; galleries are small, so fetch the max page.
+  return apiRequest<Paginated<AdminProductImage>>({
     url: `/admin/products/${productId}/images`,
+    params: { page: 1, limit: 100 },
   });
 }
 
@@ -200,9 +202,10 @@ export async function deleteProductImage(
 export async function listVariantImages(
   productId: string,
   variantId: string,
-): Promise<VariantImage[]> {
-  return apiRequest<VariantImage[]>({
+): Promise<Paginated<VariantImage>> {
+  return apiRequest<Paginated<VariantImage>>({
     url: `/admin/products/${productId}/variants/${variantId}/images`,
+    params: { page: 1, limit: 100 },
   });
 }
 

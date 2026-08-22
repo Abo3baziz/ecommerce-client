@@ -47,7 +47,7 @@ export function VariantImagesManager({
     queryFn: () => listVariantImages(productId, variantId),
   });
 
-  const images = [...(query.data ?? [])].sort(
+  const images = [...(query.data?.data ?? [])].sort(
     (a, b) => a.display_order - b.display_order,
   );
 
