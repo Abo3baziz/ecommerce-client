@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { TooltipIconButton } from "@/components/shared/tooltip-icon-button";
 import {
   Dialog,
   DialogContent,
@@ -162,13 +163,14 @@ export function ProductImagesTab({ productId }: { productId: string }) {
                 </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
+                    <TooltipIconButton
                       variant="ghost"
                       size="icon-sm"
-                      aria-label={`Actions for image ${img.display_order}`}
+                      side="left"
+                      label={`Actions for image ${img.display_order}`}
                     >
                       <MoreVertical className="size-4" aria-hidden />
-                    </Button>
+                    </TooltipIconButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {!img.is_primary ? (

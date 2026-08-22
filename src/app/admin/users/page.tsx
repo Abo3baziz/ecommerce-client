@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { TooltipIconButton } from "@/components/shared/tooltip-icon-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -362,13 +362,14 @@ function UsersTable() {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
+                          <TooltipIconButton
                             variant="ghost"
                             size="icon-sm"
-                            aria-label={`Actions for ${user.email}`}
+                            side="left"
+                            label={`Actions for ${user.email}`}
                           >
                             <EllipsisVertical aria-hidden className="size-4" />
-                          </Button>
+                          </TooltipIconButton>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => setEditing(user)}>

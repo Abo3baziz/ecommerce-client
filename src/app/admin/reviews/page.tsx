@@ -7,6 +7,7 @@ import { Check, Eye, MessageSquareText, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TooltipIconButton } from "@/components/shared/tooltip-icon-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -407,14 +408,14 @@ function ReviewsTable() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button
+                        <TooltipIconButton
                           variant="outline"
                           size="icon-sm"
-                          aria-label="View review"
+                          label="View review"
                           onClick={() => setViewing(review)}
                         >
                           <Eye aria-hidden className="size-4" />
-                        </Button>
+                        </TooltipIconButton>
                         {dimmed ? (
                           <Button
                             variant="outline"
@@ -450,23 +451,23 @@ function ReviewsTable() {
                             )}
                           </Button>
                         )}
-                        <Button
+                        <TooltipIconButton
                           variant="outline"
                           size="icon-sm"
-                          aria-label="Edit review"
+                          label="Edit review"
                           onClick={() => setEditing(review)}
                         >
                           <Pencil aria-hidden className="size-4" />
-                        </Button>
-                        <Button
+                        </TooltipIconButton>
+                        <TooltipIconButton
                           variant="outline"
                           size="icon-sm"
-                          aria-label="Delete review"
                           className="text-destructive hover:text-destructive"
+                          label="Delete review"
                           onClick={() => setDeleting(review)}
                         >
                           <Trash2 aria-hidden className="size-4" />
-                        </Button>
+                        </TooltipIconButton>
                       </div>
                     </TableCell>
                   </TableRow>

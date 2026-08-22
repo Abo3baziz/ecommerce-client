@@ -25,6 +25,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { Money } from "@/components/shared/money";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { TooltipIconButton } from "@/components/shared/tooltip-icon-button";
 import {
   PaginationFromStandard,
 } from "@/components/shared/pagination";
@@ -157,10 +158,11 @@ function OrdersBrowser() {
               ))}
             </SelectContent>
           </Select>
-          <Button
+          <TooltipIconButton
             variant="outline"
             size="icon"
-            aria-label={
+            side="top"
+            label={
               values.desc
                 ? "Sorted descending — switch to ascending"
                 : "Sorted ascending — switch to descending"
@@ -172,7 +174,7 @@ function OrdersBrowser() {
             ) : (
               <ArrowUpNarrowWide aria-hidden className="size-4" />
             )}
-          </Button>
+          </TooltipIconButton>
         </div>
       </div>
 

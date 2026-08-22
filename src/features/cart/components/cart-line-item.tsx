@@ -7,6 +7,7 @@ import { Minus, Package, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TooltipIconButton } from "@/components/shared/tooltip-icon-button";
 import { Input } from "@/components/ui/input";
 import { Money } from "@/components/shared/money";
 import { updateCartItem } from "@/features/cart/api";
@@ -193,17 +194,18 @@ export function CartLineItemRow({ item, onRemove }: CartLineItemRowProps) {
         role="group"
         aria-label={`Quantity for ${item.product_name}`}
       >
-        <Button
+        <TooltipIconButton
           variant="outline"
           size="icon-sm"
-          aria-label="Decrease quantity"
+          side="top"
+          label="Decrease quantity"
           disabled={
             displayedQuantity === String(MIN_QUANTITY) && draft === null
           }
           onClick={() => handleStep(-1)}
         >
           <Minus aria-hidden className="size-3.5" />
-        </Button>
+        </TooltipIconButton>
         <Input
           inputMode="numeric"
           aria-label="Set quantity"
@@ -212,14 +214,15 @@ export function CartLineItemRow({ item, onRemove }: CartLineItemRowProps) {
           onChange={(event) => handleInputChange(event.target.value)}
           onBlur={handleInputBlur}
         />
-        <Button
+        <TooltipIconButton
           variant="outline"
           size="icon-sm"
-          aria-label="Increase quantity"
+          side="top"
+          label="Increase quantity"
           onClick={() => handleStep(1)}
         >
           <Plus aria-hidden className="size-3.5" />
-        </Button>
+        </TooltipIconButton>
       </div>
 
       <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-center">

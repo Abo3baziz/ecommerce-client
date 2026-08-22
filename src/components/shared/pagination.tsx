@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { TooltipIconButton } from "@/components/shared/tooltip-icon-button";
 
 export interface PaginationProps {
   page: number;
@@ -66,27 +66,30 @@ export function Pagination({
       aria-label="Pagination"
       className={`flex items-center justify-center gap-1 ${className ?? ""}`}
     >
-      <Button
+      <TooltipIconButton
         variant="outline"
         size="icon"
+        label="Previous page"
+        side="top"
         disabled={!canPrev}
         onClick={() => onPageChange(page - 1)}
-        aria-label="Previous page"
       >
         <ChevronLeft className="size-4" />
-      </Button>
+      </TooltipIconButton>
 
       {numbered
         ? pageWindow(page, totalPages).map((p) => (
-            <Button
+            <TooltipIconButton
               key={p}
               variant={p === page ? "default" : "outline"}
               size="icon"
-              onClick={() => onPageChange(p)}
+              label={`Page ${p}`}
+              side="top"
               aria-current={p === page ? "page" : undefined}
+              onClick={() => onPageChange(p)}
             >
               {p}
-            </Button>
+            </TooltipIconButton>
           ))
         : null}
 
@@ -97,15 +100,16 @@ export function Pagination({
         </span>
       ) : null}
 
-      <Button
+      <TooltipIconButton
         variant="outline"
         size="icon"
+        label="Next page"
+        side="top"
         disabled={!canNext}
         onClick={() => onPageChange(page + 1)}
-        aria-label="Next page"
       >
         <ChevronRight className="size-4" />
-      </Button>
+      </TooltipIconButton>
     </nav>
   );
 }

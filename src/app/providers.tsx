@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { SessionProvider } from "@/features/auth/session-context";
 
 const NO_RETRY_STATUSES = new Set([400, 401, 403, 404, 409, 422]);
@@ -34,7 +35,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionProvider>{children}</SessionProvider>
+      <TooltipProvider delayDuration={300}>
+        <SessionProvider>{children}</SessionProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }

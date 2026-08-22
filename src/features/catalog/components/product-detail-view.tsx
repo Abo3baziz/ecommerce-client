@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TooltipIconButton } from "@/components/shared/tooltip-icon-button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -286,15 +287,16 @@ function ProductBody({ product }: ProductBodyProps) {
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center rounded-lg border">
-            <Button
+            <TooltipIconButton
               variant="ghost"
               size="icon"
-              aria-label="Decrease quantity"
+              side="top"
+              label="Decrease quantity"
               disabled={!selectedVariant || quantity <= MIN_QUANTITY}
               onClick={() => setQtyText(String(clampQuantity(quantity - 1)))}
             >
               <Minus aria-hidden className="size-4" />
-            </Button>
+            </TooltipIconButton>
             <Input
               aria-label="Quantity"
               inputMode="numeric"
@@ -304,15 +306,16 @@ function ProductBody({ product }: ProductBodyProps) {
               disabled={!selectedVariant}
               className="w-14 border-0 bg-transparent text-center [appearance:textfield] focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none"
             />
-            <Button
+            <TooltipIconButton
               variant="ghost"
               size="icon"
-              aria-label="Increase quantity"
+              side="top"
+              label="Increase quantity"
               disabled={!selectedVariant || quantity >= MAX_QUANTITY}
               onClick={() => setQtyText(String(clampQuantity(quantity + 1)))}
             >
               <Plus aria-hidden className="size-4" />
-            </Button>
+            </TooltipIconButton>
           </div>
           <Button
             size="lg"

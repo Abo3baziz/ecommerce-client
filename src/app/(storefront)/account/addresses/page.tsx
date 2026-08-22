@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { TooltipIconButton } from "@/components/shared/tooltip-icon-button";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -198,28 +199,30 @@ export default function AccountAddressesPage() {
                       {address.label || "Address"}
                     </Badge>
                     <div className="flex items-center gap-1">
-                      <Button
+                      <TooltipIconButton
                         variant="ghost"
                         size="icon-sm"
-                        aria-label={`Edit ${address.label || "address"}`}
+                        side="left"
+                        label={`Edit ${address.label || "address"}`}
                         onClick={() => {
                           setEditing(address);
                           setFormOpen(true);
                         }}
                       >
                         <Pencil aria-hidden className="size-3.5" />
-                      </Button>
-                      <Button
+                      </TooltipIconButton>
+                      <TooltipIconButton
                         variant="ghost"
                         size="icon-sm"
-                        aria-label={`Delete ${address.label || "address"}`}
+                        side="left"
+                        label={`Delete ${address.label || "address"}`}
                         onClick={() => setDeleting(address)}
                       >
                         <Trash2
                           aria-hidden
                           className="size-3.5 text-destructive"
                         />
-                      </Button>
+                      </TooltipIconButton>
                     </div>
                   </div>
                   <div className="mt-2 flex flex-col gap-0.5 text-sm">

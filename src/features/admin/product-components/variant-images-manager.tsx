@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { Loader2, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { TooltipIconButton } from "@/components/shared/tooltip-icon-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -294,12 +295,13 @@ function VariantImageRow({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
         />
-        <Button
+        <TooltipIconButton
           type="button"
           variant="outline"
           size="icon"
+          side="left"
+          label={`Save display order for ${image.alt_text || "image"}`}
           disabled={!dirty || saving}
-          aria-label={`Save display order for ${image.alt_text || "image"}`}
           onClick={() => onSaveOrder(Number(draft))}
         >
           {saving ? (
@@ -307,17 +309,18 @@ function VariantImageRow({
           ) : (
             <Save className="size-4" aria-hidden />
           )}
-        </Button>
-        <Button
+        </TooltipIconButton>
+        <TooltipIconButton
           type="button"
           variant="ghost"
           size="icon"
+          side="left"
           className="text-destructive hover:text-destructive"
-          aria-label="Remove image"
+          label="Remove image"
           onClick={onRemove}
         >
           <Trash2 className="size-4" aria-hidden />
-        </Button>
+        </TooltipIconButton>
       </div>
     </li>
   );

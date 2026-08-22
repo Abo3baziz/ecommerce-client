@@ -6,6 +6,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { Plus, X } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { TooltipIconButton } from "@/components/shared/tooltip-icon-button";
 import {
   Dialog,
   DialogContent,
@@ -190,16 +191,17 @@ function ReviewForm({
                 }
               }}
             />
-            <Button
+            <TooltipIconButton
               type="button"
               variant="outline"
               size="icon"
+              side="top"
+              label="Add photo"
               onClick={addImage}
               disabled={images.length >= MAX_IMAGES}
-              aria-label="Add photo"
             >
               <Plus aria-hidden className="size-4" />
-            </Button>
+            </TooltipIconButton>
           </div>
           {imageError ? (
             <p className="text-sm text-destructive">{imageError}</p>
@@ -212,15 +214,16 @@ function ReviewForm({
                   className="flex max-w-full items-center gap-1 rounded-md border bg-muted/40 py-1 pr-1 pl-2 text-xs"
                 >
                   <span className="max-w-52 truncate">{url}</span>
-                  <Button
+                  <TooltipIconButton
                     type="button"
                     variant="ghost"
                     size="icon-sm"
+                    side="top"
+                    label={`Remove photo ${url}`}
                     onClick={() => removeImage(url)}
-                    aria-label={`Remove photo ${url}`}
                   >
                     <X aria-hidden className="size-3.5" />
-                  </Button>
+                  </TooltipIconButton>
                 </li>
               ))}
             </ul>

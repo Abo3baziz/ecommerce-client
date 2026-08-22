@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Search, ShoppingCart, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TooltipIconButton } from "@/components/shared/tooltip-icon-button";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -107,18 +108,18 @@ export function StorefrontHeader() {
           </div>
         </form>
 
-        <Button
+        <TooltipIconButton
           asChild
           variant="ghost"
           size="icon"
           className="relative shrink-0"
-          aria-label="View cart"
+          label="View cart"
         >
           <Link href="/cart">
             <ShoppingCart className="size-4" aria-hidden />
             {user ? <CartBadge /> : null}
           </Link>
-        </Button>
+        </TooltipIconButton>
 
         <AccountMenu />
       </div>

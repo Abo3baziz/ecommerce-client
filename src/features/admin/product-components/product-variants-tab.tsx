@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { TooltipIconButton } from "@/components/shared/tooltip-icon-button";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -340,12 +341,13 @@ function VariantRows({
     <>
       <TableRow className={dimmed ? "opacity-50" : undefined}>
         <TableCell>
-          <Button
+          <TooltipIconButton
             type="button"
             variant="ghost"
             size="icon-sm"
+            side="right"
             aria-expanded={expanded}
-            aria-label={`${expanded ? "Hide" : "Show"} images for ${variant.sku}`}
+            label={`${expanded ? "Hide" : "Show"} images for ${variant.sku}`}
             onClick={onToggleExpand}
           >
             {expanded ? (
@@ -353,7 +355,7 @@ function VariantRows({
             ) : (
               <ChevronRight className="size-4" aria-hidden />
             )}
-          </Button>
+          </TooltipIconButton>
         </TableCell>
         <TableCell className="font-medium">{variant.sku}</TableCell>
         <TableCell>{variant.barcode ?? "—"}</TableCell>
@@ -368,43 +370,43 @@ function VariantRows({
         </TableCell>
         <TableCell className="text-right">
           <div className="flex justify-end gap-1">
-            <Button
+            <TooltipIconButton
               type="button"
               variant="ghost"
               size="icon-sm"
+              label="Manage images"
               onClick={onToggleExpand}
-              title="Manage images"
             >
               <Images className="size-4" aria-hidden />
-            </Button>
-            <Button
+            </TooltipIconButton>
+            <TooltipIconButton
               type="button"
               variant="ghost"
               size="icon-sm"
+              label="Manage reserve"
               onClick={onReserve}
-              title="Manage reserve"
             >
               <Lock className="size-4" aria-hidden />
-            </Button>
-            <Button
+            </TooltipIconButton>
+            <TooltipIconButton
               type="button"
               variant="ghost"
               size="icon-sm"
+              label="Edit variant"
               onClick={onEdit}
-              title="Edit variant"
             >
               <Pencil className="size-4" aria-hidden />
-            </Button>
-            <Button
+            </TooltipIconButton>
+            <TooltipIconButton
               type="button"
               variant="ghost"
               size="icon-sm"
               className="text-destructive hover:text-destructive"
+              label="Delete variant"
               onClick={onDelete}
-              title="Delete variant"
             >
               <Trash2 className="size-4" aria-hidden />
-            </Button>
+            </TooltipIconButton>
           </div>
         </TableCell>
       </TableRow>
