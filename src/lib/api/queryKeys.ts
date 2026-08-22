@@ -11,6 +11,7 @@ import type {
   MyReviewListParams,
   ProductListParams,
   ProductReviewListParams,
+  StatsPeriodPreset,
 } from "@/types";
 
 export const qk = {
@@ -81,5 +82,8 @@ export const qk = {
     users: (params: AdminUserListParams = {}) =>
       ["admin-users", params] as const,
     user: (userId: string) => ["admin-user", userId] as const,
+
+    stats: (preset: StatsPeriodPreset) =>
+      ["admin-stats", preset] as const,
   },
 };

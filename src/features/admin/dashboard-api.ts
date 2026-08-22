@@ -1,89 +1,102 @@
 "use client";
 
-import { useQueries } from "@tanstack/react-query";
+import { useQuery, useQueries } from "@tanstack/react-query";
 import { qk } from "@/lib/api/queryKeys";
 import { apiRequest } from "@/lib/api/client";
+import type {
+  AdminOrderListRow,
+  AdminStats,
+  Paginated,
+  StatsPeriodPreset,
+} from "@/types";
+import { listAdminOrders } from "./orders-api";
 
-interface TotalOnlyPage {
-  pagination: {
-    total: number;
+export interface AdminStatsResult {
+  stats: AdminStats | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  refetch: () => void;
+}
+
+export function useAdminStats(preset: StatsPeriodPreset): AdminStatsResult {
+  const query = useQuery({
+    queryKey: qk.admin.stats(preset),
+    queryFn: () =>
+      apiRequest<AdminStats>({
+        url: "/admin/stats",
+        params: { period: preset },
+      }),
+    staleTime: 60_000,
+  });
+
+  return {
+    stats: query.data,
+    isLoading: query.isPending,
+    isError: query.isError,
+    refetch: () => {
+      void query.refetch();
+    },
   };
 }
 
+export interface RecentAdminOrdersResult {
+  orders: AdminOrderListRow[];
+  isLoading: boolean;
+  isError: boolean;
+}
+
+export function useRecentAdminOrders(
+  limit = 8,
+): RecentAdminOrdersResult {
+  const query = useQuery({
+    queryKey: [...qk.admin.orders({ page: 1, limit }), "recent"],
+    queryFn: () =>
+      listAdminOrders({ page: 1, limit }) as Promise<
+        Paginated<AdminOrderListRow>
+      >,
+    staleTime: 30_000,
+  });
+
+  return {
+    orders: query.data?.data ?? [],
+    isLoading: query.isPending,
+    isError: query.isError,
+  };
+}
+
+// The stats endpoint covers orders/stock/customers/reviews; product and
+// category totals still come from list pagination metadata.
+interface CatalogTotals {
+  products: number | null;
+  categories: number | null;
+}
+
 async function fetchTotal(url: string): Promise<number> {
-  const page = await apiRequest<TotalOnlyPage>({
+  const page = await apiRequest<Paginated<unknown>>({
     url,
     params: { page: 1, limit: 1 },
   });
   return page.pagination?.total ?? 0;
 }
 
-export interface AdminQuickCounts {
-  products: number | null;
-  categories: number | null;
-  inventory: number | null;
-  orders: number | null;
-  reviews: number | null;
-  customers: number | null;
-}
-
-export interface AdminQuickCountsResult {
-  counts: AdminQuickCounts;
-  isLoading: boolean;
-  isError: boolean;
-  refetch: () => void;
-}
-
-export function useAdminQuickCounts(): AdminQuickCountsResult {
-  const result = useQueries({
+export function useAdminCatalogCounts(): CatalogTotals {
+  const results = useQueries({
     queries: [
       {
         queryKey: [...qk.admin.products({ page: 1, limit: 1 }), "count"],
         queryFn: () => fetchTotal("/admin/products"),
+        staleTime: 60_000,
       },
       {
         queryKey: [...qk.admin.categories({ page: 1, limit: 1 }), "count"],
         queryFn: () => fetchTotal("/admin/categories"),
-      },
-      {
-        queryKey: [...qk.admin.inventory({ page: 1, limit: 1 }), "count"],
-        queryFn: () => fetchTotal("/admin/inventory"),
-      },
-      {
-        queryKey: [...qk.admin.orders({ page: 1, limit: 1 }), "count"],
-        queryFn: () => fetchTotal("/admin/orders"),
-      },
-      {
-        queryKey: [...qk.admin.reviews({ page: 1, limit: 1 }), "count"],
-        queryFn: () => fetchTotal("/admin/reviews"),
-      },
-      {
-        queryKey: [...qk.admin.users({ page: 1, limit: 1 }), "count"],
-        queryFn: () => fetchTotal("/admin/users"),
+        staleTime: 60_000,
       },
     ],
-    combine: (results) => {
-      const [products, categories, inventory, orders, reviews, users] =
-        results;
-      return {
-        counts: {
-          products: products?.data ?? null,
-          categories: categories?.data ?? null,
-          inventory: inventory?.data ?? null,
-          orders: orders?.data ?? null,
-          reviews: reviews?.data ?? null,
-          customers: users?.data ?? null,
-        } satisfies AdminQuickCounts,
-        isLoading: results.some((r) => r.isLoading),
-        isError: results.some((r) => r.isError),
-        refetch: () => {
-          for (const r of results) {
-            void r.refetch();
-          }
-        },
-      };
-    },
+    combine: (results) => ({
+      products: results[0]?.data ?? null,
+      categories: results[1]?.data ?? null,
+    }),
   });
-
-  return result;
+  return results;
 }

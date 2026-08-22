@@ -68,6 +68,8 @@ tracks can proceed in parallel; admin tasks additionally need T05 (ImageKit) and
 | T16 | [T16-admin-categories-inventory.md](T16-admin-categories-inventory.md) | Categories CRUD, inventory dashboard | ✅ done |
 | T17 | [T17-admin-orders-reviews-users.md](T17-admin-orders-reviews-users.md) | Orders transitions, moderation, customers | ✅ done |
 | T18 | [T18-quality-polish.md](T18-quality-polish.md) | Quality bar audit + endpoint coverage check | ✅ done |
+| T19 | [T19-paymob-checkout.md](T19-paymob-checkout.md) | Paymob checkout flow (Unified Checkout redirect, result page, pending states) | ⏳ todo |
+| T20 | [T20-admin-dashboard-stats.md](T20-admin-dashboard-stats.md) | Admin dashboard statistics (backend `/admin/stats` aggregate + recharts dashboard) | ✅ done |
 
 ## Definition of Done (applies to every task)
 
@@ -80,3 +82,7 @@ TypeScript strict end-to-end.
 
 Out of scope everywhere (prompt §12): password-reset screens, wishlist, loyalty,
 recommendations, real payment gateways (only `mock`), webhooks/streaming.
+
+> **Update (2026-08-22):** real payment gateways are now in scope — Paymob
+> (cards + wallets, Unified Checkout redirect). See [T19](T19-paymob-checkout.md).
+> Backend contract changes tracked in `D:\code\ecommerce\tasks\T-081…T-087`.
