@@ -102,6 +102,7 @@ export interface ImageKitAuthParams {
   signature: string;
   publicKey: string;
   urlEndpoint: string;
+  folder?: string;
 }
 
 export interface Category {
