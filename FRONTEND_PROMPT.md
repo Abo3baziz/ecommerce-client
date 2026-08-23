@@ -130,6 +130,7 @@ Write one normalizer that turns both into a typed `ApiError { status, code?, mes
 /admin/products            Product list + editor (tabs: details, variants, images)
 /admin/categories          Categories + product assignment
 /admin/inventory           Stock dashboard
+/admin/coupons             Coupon management (list, CRUD, usage history)
 /admin/orders              Orders dashboard + detail
 /admin/reviews             Moderation queue
 /admin/users               Customers + role management

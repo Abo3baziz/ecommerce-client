@@ -2,6 +2,7 @@ import type {
   AdminAnalyticsOverviewParams,
   AdminAuditListParams,
   AdminCategoryListParams,
+  AdminCouponListParams,
   AdminOrderListParams,
   AdminProductListParams,
   AdminReviewListParams,
@@ -94,5 +95,11 @@ export const qk = {
       ["admin-analytics-overview", params] as const,
     analyticsExpenses: (params: OperatingExpenseListParams = {}) =>
       ["admin-analytics-expenses", params] as const,
+
+    coupons: (params: AdminCouponListParams = {}) =>
+      ["admin-coupons", params] as const,
+    coupon: (couponId: string) => ["admin-coupon", couponId] as const,
+    couponUsages: (couponId: string, page = 1) =>
+      ["admin-coupon-usages", couponId, page] as const,
   },
 };
