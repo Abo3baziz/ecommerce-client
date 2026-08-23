@@ -8,6 +8,7 @@ import {
   MessageSquareText,
   Package,
   ScrollText,
+  ShieldCheck,
   ShoppingCart,
   Store,
   Ticket,
@@ -42,6 +43,10 @@ const SUPER_ADMIN_NAV_ITEMS: ReadonlyArray<NavItem> = [
   { href: "/admin/audit", label: "Audit log", icon: ScrollText },
 ];
 
+const ADMIN_MGMT_NAV_ITEMS: ReadonlyArray<NavItem> = [
+  { href: "/admin/admins", label: "Admins", icon: ShieldCheck },
+];
+
 const ANALYTICS_NAV_ITEMS: ReadonlyArray<NavItem> = [
   { href: "/admin/analytics", label: "Overview", icon: TrendingUp, exact: true },
   { href: "/admin/analytics/coupons", label: "Coupon insights", icon: Ticket },
@@ -51,7 +56,30 @@ const ANALYTICS_NAV_ITEMS: ReadonlyArray<NavItem> = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const { isSuperAdmin } = useSession();
-  const items = isSuperAdmin ? [...NAV_ITEMS, ...SUPER_ADMIN_NAV_ITEMS] : NAV_ITEMS;
+
+  function renderNavLinks(list: ReadonlyArray<NavItem>) {
+    return list.map(({ href, label, icon: Icon, exact }) => {
+      const active = exact
+        ? pathname === href
+        : pathname === href || pathname.startsWith(`${href}/`);
+      return (
+        <Link
+          key={href}
+          href={href}
+          aria-current={active ? "page" : undefined}
+          className={cn(
+            "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+            active
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          )}
+        >
+          <Icon className="size-4 shrink-0" aria-hidden />
+          {label}
+        </Link>
+      );
+    });
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -60,54 +88,28 @@ export function AdminSidebar() {
         <span className="font-semibold">Admin</span>
       </div>
       <nav className="flex flex-1 flex-col gap-1 overflow-auto p-3" aria-label="Admin">
-        {items.map(({ href, label, icon: Icon, exact }) => {
-          const active = exact
-            ? pathname === href
-            : pathname === href || pathname.startsWith(`${href}/`);
-          return (
-            <Link
-              key={href}
-              href={href}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
-                active
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
-              )}
-            >
-              <Icon className="size-4 shrink-0" aria-hidden />
-              {label}
-            </Link>
-          );
-        })}
+        {renderNavLinks(NAV_ITEMS)}
         {isSuperAdmin ? (
-          <div className="mt-3 border-t pt-2">
-            <p className="px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Analytics
-            </p>
-            {ANALYTICS_NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
-              const active = exact
-                ? pathname === href
-                : pathname === href || pathname.startsWith(`${href}/`);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
-                    active
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
-                >
-                  <Icon className="size-4 shrink-0" aria-hidden />
-                  {label}
-                </Link>
-              );
-            })}
-          </div>
+          <>
+            <div className="mt-3 border-t pt-2">
+              <p className="px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Analytics
+              </p>
+              {renderNavLinks(ANALYTICS_NAV_ITEMS)}
+            </div>
+            <div className="mt-3 border-t pt-2">
+              <p className="px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Admin management
+              </p>
+              {renderNavLinks(ADMIN_MGMT_NAV_ITEMS)}
+              <div className="mt-3 border-t pt-2">
+                <p className="px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Governance
+                </p>
+                {renderNavLinks(SUPER_ADMIN_NAV_ITEMS)}
+              </div>
+            </div>
+          </>
         ) : null}
       </nav>
       <div className="border-t p-3">
@@ -130,7 +132,7 @@ export function AdminMobileNav() {
   const pathname = usePathname();
   const { isSuperAdmin } = useSession();
   const items = isSuperAdmin
-    ? [...NAV_ITEMS, ...SUPER_ADMIN_NAV_ITEMS, ...ANALYTICS_NAV_ITEMS]
+    ? [...NAV_ITEMS, ...ANALYTICS_NAV_ITEMS, ...ADMIN_MGMT_NAV_ITEMS, ...SUPER_ADMIN_NAV_ITEMS]
     : NAV_ITEMS;
   return (
     <nav
