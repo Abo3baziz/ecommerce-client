@@ -6,15 +6,21 @@ export const CUSTOMER_IMAGEKIT_AUTH_PATH = "/uploads/imagekit-auth";
 
 export async function fetchImageKitAuth(
   authPath: string = ADMIN_IMAGEKIT_AUTH_PATH,
+  options: { context?: "products" | "reviews" } = {},
 ): Promise<ImageKitAuthParams> {
   return apiRequest<ImageKitAuthParams>({
     url: authPath,
+    params: options.context ? { context: options.context } : undefined,
   });
 }
 
 export interface ImageKitUploadResult {
   url: string;
 }
+
+// Browser-side uploads must target ImageKit's dedicated upload host, which
+// serves CORS headers. The urlEndpoint (ik.imagekit.io/...) is delivery-only.
+const IMAGEKIT_UPLOAD_URL = "https://upload.imagekit.io/api/v1/files/upload";
 
 export async function uploadToImageKit(
   params: ImageKitAuthParams,
@@ -25,11 +31,14 @@ export async function uploadToImageKit(
   const form = new FormData();
   form.append("file", file);
   form.append("fileName", file.name);
+  if (params.folder) {
+    form.append("folder", params.folder);
+  }
   form.append("publicKey", params.publicKey);
   form.append("signature", params.signature);
   form.append("expire", String(params.expire));
   form.append("token", params.token);
-  const endpoint = `${params.urlEndpoint.replace(/\/$/, "")}/api/v1/files/upload`;
+  const endpoint = IMAGEKIT_UPLOAD_URL;
 
   return new Promise<ImageKitUploadResult>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
