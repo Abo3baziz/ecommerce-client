@@ -44,6 +44,7 @@ const SUPER_ADMIN_NAV_ITEMS: ReadonlyArray<NavItem> = [
 
 const ANALYTICS_NAV_ITEMS: ReadonlyArray<NavItem> = [
   { href: "/admin/analytics", label: "Overview", icon: TrendingUp, exact: true },
+  { href: "/admin/analytics/coupons", label: "Coupon insights", icon: Ticket },
   { href: "/admin/analytics/expenses", label: "Expenses", icon: Warehouse },
 ];
 

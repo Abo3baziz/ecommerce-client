@@ -91,6 +91,51 @@ export interface AdminAnalyticsOverview {
   sales_quality: AdminAnalyticsSalesQuality;
 }
 
+export type CouponDiscountTypeV2 = "FIXED_AMOUNT" | "PERCENTAGE";
+
+export interface AdminCouponAnalyticsTotals {
+  total_coupons: number;
+  active_coupons: number;
+  inactive_coupons: number;
+  expired_coupons: number;
+  usage_limit_reached: number;
+  lifetime_redemptions: number;
+  range_redemptions: number;
+  discounts_given_in_range: string;
+  coupon_orders_count: number;
+  coupon_orders_revenue: string;
+  coupon_orders_share_pct: string;
+}
+
+export interface AdminCouponMostUsed {
+  coupon_public_id: string;
+  code: string;
+  discount_type: CouponDiscountTypeV2;
+  discount_value: string;
+  is_active: boolean;
+  lifetime_uses: number;
+  range_redemptions: number;
+  discounts_given_in_range: string;
+}
+
+export interface AdminCouponTrendPoint {
+  date: string;
+  redemptions: number;
+  discount_amount: string;
+}
+
+export interface AdminCouponAnalytics {
+  range: AdminAnalyticsRange;
+  totals: AdminCouponAnalyticsTotals;
+  most_used: AdminCouponMostUsed[];
+  trend: AdminCouponTrendPoint[];
+}
+
+export interface AdminCouponAnalyticsParams {
+  date_from?: string;
+  date_to?: string;
+}
+
 export interface AdminAnalyticsOverviewParams {
   date_from?: string;
   date_to?: string;
