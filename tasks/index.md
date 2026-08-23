@@ -75,6 +75,7 @@ tracks can proceed in parallel; admin tasks additionally need T05 (ImageKit) and
 | T23 | [T23-password-reset-otp.md](T23-password-reset-otp.md) | Password reset via emailed OTP + link fallback (wizard `/forgot-password`, backend OTP verify) | ✅ done |
 | T24 | [T24-tooltip-icon-buttons.md](T24-tooltip-icon-buttons.md) | Hover labels for all icon-only buttons (shadcn tooltip + shared wrapper) | ✅ done |
 | T25 | [T25-analytics-section.md](T25-analytics-section.md) | Analytics section: P&L, expenses ledger, product/customer insights (SUPER_ADMIN only) | ✅ done |
+| T29 | [T29-csrf-env-toggle.md](T29-csrf-env-toggle.md) | Environment-based CSRF toggle (`ENABLE_CSRF`, default true, prod boot guard) | ✅ done |
 
 ## Definition of Done (applies to every task)
 
