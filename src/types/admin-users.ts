@@ -30,6 +30,31 @@ export interface RoleChangeResponse {
   role: UserRole;
 }
 
+export interface AdminAccount {
+  public_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  role: string;
+  status: "ACTIVE" | "SUSPENDED";
+  activity_status: "ACTIVE" | "INACTIVE";
+  created_at: IsoDateTime;
+  last_login_at: IsoDateTime | null;
+  last_activity_at: IsoDateTime | null;
+  last_action_at: IsoDateTime | null;
+  last_action_type: string | null;
+}
+
+export interface AdminAccountListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: "ACTIVE" | "SUSPENDED";
+  activity?: "ACTIVE" | "INACTIVE";
+  sort?: string;
+}
+
 export interface AdminUserListParams {
   page?: number;
   limit?: number;

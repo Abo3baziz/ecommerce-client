@@ -1,0 +1,8 @@
+feat(admin): Admin Management section with activity monitoring (T28)
+
+- add /admin/admins page (SUPER_ADMIN gated): debounced search, account and
+  activity status filters, sortable last-login/created columns, pagination
+- detail drawer: profile card plus Activity tab reusing the audit log API
+  filtered by actor; suspend/reactivate actions behind ConfirmDialog
+- register admins-api client, AdminAccount types, query keys, and the
+  Admin Management sidebar group; mark T28 complete in task index

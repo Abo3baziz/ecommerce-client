@@ -78,6 +78,7 @@ tracks can proceed in parallel; admin tasks additionally need T05 (ImageKit) and
 | T29 | [T29-csrf-env-toggle.md](T29-csrf-env-toggle.md) | Environment-based CSRF toggle (`ENABLE_CSRF`, default true, prod boot guard) | ✅ done |
 | T26 | [T26-coupon-management.md](T26-coupon-management.md) | Coupon management section + audit integration (CRUD, soft delete, usage drawer, tx audits) | ✅ done |
 | T27 | [T27-coupon-analytics.md](T27-coupon-analytics.md) | Coupon insights inside Analytics (status counts, trends, most-used, revenue impact) | ✅ done |
+| T28 | [T28-admin-management.md](T28-admin-management.md) | Admin Management section (super-admin admin accounts + activity monitoring) | ✅ done |
 | T30 | [T30-imagekit-upload-hardening.md](T30-imagekit-upload-hardening.md) | ImageKit upload hardening: folders, save-time URL validation, review audit edges | ✅ done |
 
 ## Definition of Done (applies to every task)

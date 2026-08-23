@@ -1,4 +1,5 @@
 import type {
+  AdminAccountListParams,
   AdminAnalyticsOverviewParams,
   AdminCouponAnalyticsParams,
   AdminAuditListParams,
@@ -104,5 +105,8 @@ export const qk = {
     coupon: (couponId: string) => ["admin-coupon", couponId] as const,
     couponUsages: (couponId: string, page = 1) =>
       ["admin-coupon-usages", couponId, page] as const,
+
+    adminAccounts: (params: AdminAccountListParams = {}) =>
+      ["admin-accounts", params] as const,
   },
 };
