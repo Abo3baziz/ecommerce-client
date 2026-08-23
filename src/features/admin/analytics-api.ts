@@ -2,6 +2,8 @@ import { apiRequest } from "@/lib/api/client";
 import type {
   AdminAnalyticsOverview,
   AdminAnalyticsOverviewParams,
+  AdminCouponAnalytics,
+  AdminCouponAnalyticsParams,
   CreateOperatingExpenseInput,
   OperatingExpense,
   OperatingExpenseListParams,
@@ -14,6 +16,18 @@ export async function getAnalyticsOverview(
 ): Promise<AdminAnalyticsOverview> {
   return apiRequest<AdminAnalyticsOverview>({
     url: "/admin/analytics/overview",
+    params: {
+      date_from: params.date_from || undefined,
+      date_to: params.date_to || undefined,
+    },
+  });
+}
+
+export async function getCouponAnalytics(
+  params: AdminCouponAnalyticsParams = {},
+): Promise<AdminCouponAnalytics> {
+  return apiRequest<AdminCouponAnalytics>({
+    url: "/admin/analytics/coupons",
     params: {
       date_from: params.date_from || undefined,
       date_to: params.date_to || undefined,
