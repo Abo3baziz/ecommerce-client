@@ -7,12 +7,18 @@ export type ProductImageId = PublicId<"pimg_">;
 export type VariantImageId = PublicId<"vimg_">;
 export type CategoryId = PublicId<"cat_">;
 
+export interface ProductPrimaryImage {
+  image_url: string;
+  alt_text: string | null;
+}
+
 export interface Product {
   public_id: ProductId;
   slug: string;
   name: string;
   description: string | null;
   brand: string | null;
+  primary_image: ProductPrimaryImage | null;
   created_at: IsoDateTime;
   updated_at: IsoDateTime;
 }

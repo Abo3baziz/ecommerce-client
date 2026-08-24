@@ -20,11 +20,26 @@ export function ProductCard({
         className,
       )}
     >
-      <div className="flex aspect-square items-center justify-center bg-muted">
-        <ImageIcon
-          aria-hidden
-          className="size-10 text-muted-foreground/40 transition-transform group-hover:scale-110"
-        />
+      <div className="aspect-square overflow-hidden bg-muted">
+        {product.primary_image ? (
+          <img
+            src={product.primary_image.image_url}
+            alt={product.primary_image.alt_text ?? product.name}
+            loading="lazy"
+            className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div
+            role="img"
+            aria-label={`${product.name} — no photo available`}
+            className="flex size-full items-center justify-center"
+          >
+            <ImageIcon
+              aria-hidden
+              className="size-10 text-muted-foreground/40 transition-transform group-hover:scale-110"
+            />
+          </div>
+        )}
       </div>
       <div className="flex flex-col gap-1 p-3">
         <p className="line-clamp-2 text-sm font-medium leading-snug">
