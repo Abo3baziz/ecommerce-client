@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
-const apiOrigin = process.env.API_ORIGIN ?? "http://localhost:3000";
+// Server-side origin for the /api/v1 rewrite proxy. Trailing slashes and
+// whitespace are stripped so a sloppy env value can't produce "//api/v1".
+const apiOrigin = (process.env.API_ORIGIN ?? "http://localhost:3000")
+  .trim()
+  .replace(/\/+$/, "");
 
 const nextConfig: NextConfig = {
   async rewrites() {

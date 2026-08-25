@@ -28,9 +28,15 @@ The backend must be running (default `http://localhost:3000`, repo at `D:\code\e
   This avoids CORS entirely and keeps session cookies first-party.
 - Port is `3001` because the backend occupies `3000`.
 
-Production must serve the app and API same-site (cookies are `SameSite=Lax`) — put both
-behind one origin/reverse proxy, or set the backend `CORS_ORIGIN` to the app origin and
-point `NEXT_PUBLIC_API_BASE_URL` at the absolute API URL.
+Production must serve the app and API same-site (cookies are `SameSite=Lax`). The
+supported topology is **Vercel (storefront) + Railway/Render (API)**: keep
+`NEXT_PUBLIC_API_BASE_URL=/api/v1` relative and set `API_ORIGIN` to the backend URL —
+Vercel proxies browser calls same-origin, so no CORS and no cookie changes. The
+backend's `CORS_ORIGIN` must be set to this storefront's public URL (it also builds
+the links in transactional emails). Full runbook:
+`D:\code\ecommerce\docs\DEPLOYMENT.md` §7.
+
+`.env.example` documents both variables; copy to `.env.local` for local dev.
 
 ## Structure
 
