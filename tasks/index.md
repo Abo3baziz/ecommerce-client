@@ -68,7 +68,7 @@ tracks can proceed in parallel; admin tasks additionally need T05 (ImageKit) and
 | T16 | [T16-admin-categories-inventory.md](T16-admin-categories-inventory.md) | Categories CRUD, inventory dashboard | ✅ done |
 | T17 | [T17-admin-orders-reviews-users.md](T17-admin-orders-reviews-users.md) | Orders transitions, moderation, customers | ✅ done |
 | T18 | [T18-quality-polish.md](T18-quality-polish.md) | Quality bar audit + endpoint coverage check | ✅ done |
-| T19 | [T19-paymob-checkout.md](T19-paymob-checkout.md) | Paymob checkout flow (Unified Checkout redirect, result page, pending states) | ⏳ todo |
+| T19 | [T19-paymob-checkout.md](T19-paymob-checkout.md) | Paymob checkout flow (Unified Checkout redirect, result page, pending states) | 🚫 won't do |
 | T20 | [T20-admin-dashboard-stats.md](T20-admin-dashboard-stats.md) | Admin dashboard statistics (backend `/admin/stats` aggregate + recharts dashboard) | ✅ done |
 | T21 | [T21-manage-reserve-quantity.md](T21-manage-reserve-quantity.md) | Manual reserve/release per variant (guarded backend endpoint + shared dialog) | ✅ done |
 | T22 | [T22-admin-audit-logging.md](T22-admin-audit-logging.md) | Append-only admin audit trail (auto-middleware + auth events, super-admin viewer) | ✅ done |
@@ -93,6 +93,7 @@ TypeScript strict end-to-end.
 Out of scope everywhere (prompt §12): password-reset screens, wishlist, loyalty,
 recommendations, real payment gateways (only `mock`), webhooks/streaming.
 
-> **Update (2026-08-22):** real payment gateways are now in scope — Paymob
-> (cards + wallets, Unified Checkout redirect). See [T19](T19-paymob-checkout.md).
-> Backend contract changes tracked in `D:\code\ecommerce\tasks\T-081…T-087`.
+> **Update (2026-08-22):** real payment gateways were scoped in via Paymob
+> (see [T19](T19-paymob-checkout.md)) — **reversed 2026-08-25**: Paymob is
+> out of scope again; T19 and backend T-081…T-087 are marked won't do /
+> wontfix. Checkout stays on the `mock` provider.
