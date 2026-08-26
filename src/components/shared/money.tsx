@@ -18,6 +18,8 @@ export function Money({
     ? formatter.format(parsed)
     : value;
   return (
-    <span className={`tabular-nums ${className ?? ""}`}>{rendered}</span>
+    <span className={`font-mono tabular-nums ${className ?? ""}`}>
+      {rendered}
+    </span>
   );
 }

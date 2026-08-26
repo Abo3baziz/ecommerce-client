@@ -13,7 +13,7 @@ export default function AdminLayout({
   return (
     <AdminGate>
       <div className="flex h-screen overflow-hidden">
-        <aside className="hidden max-h-full w-60 shrink-0 self-start overflow-y-auto border-r md:block">
+        <aside className="hidden max-h-full w-60 shrink-0 self-start overflow-y-auto border-r bg-sidebar md:block">
           <AdminSidebar />
         </aside>
         <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">

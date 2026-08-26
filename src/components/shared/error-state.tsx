@@ -43,11 +43,12 @@ export function ErrorState({ error, onRetry, className }: ErrorStateProps) {
     <div
       role="alert"
       className={
-        "flex flex-col items-center justify-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-6 py-12 text-center " +
+        "flex flex-col items-center justify-center gap-3 rounded-none border border-destructive/40 bg-destructive/5 px-6 py-12 text-center " +
         (className ?? "")
       }
     >
       <AlertCircle className="size-8 text-destructive" aria-hidden />
+      <p className="label-caps text-destructive">Error</p>
       <p className="max-w-md text-sm text-muted-foreground">
         {messageFor(apiError)}
       </p>

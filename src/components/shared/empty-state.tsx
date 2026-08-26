@@ -20,13 +20,15 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed px-6 py-16 text-center",
+        "hatch-light flex flex-col items-center justify-center gap-3 border bg-card px-6 py-16 text-center",
         className,
       )}
     >
       <Icon className="size-10 text-muted-foreground/50" aria-hidden />
       <div>
-        <p className="font-medium">{title}</p>
+        <p className="font-heading text-lg font-semibold uppercase">
+          {title}
+        </p>
         {description ? (
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         ) : null}
