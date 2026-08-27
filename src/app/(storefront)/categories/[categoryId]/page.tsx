@@ -1,148 +1,50 @@
-"use client";
-
-import Link from "next/link";
+import type { Metadata } from "next";
 import { Suspense } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/empty-state";
-import { ErrorState } from "@/components/shared/error-state";
-import { normalizeApiError } from "@/lib/api/client";
-import {
-  catalogHasActiveFilters,
-  catalogQueryParams,
-  useCatalogFilters,
-} from "@/features/catalog/filters";
-import { useCategory, useCategoryProducts } from "@/features/catalog/hooks";
-import { CatalogSection } from "@/features/catalog/components/catalog-section";
-import { ProductGridSkeleton } from "@/features/catalog/components/product-grid";
+import { JsonLd } from "@/components/seo/json-ld";
+import { CategoryClient } from "@/features/catalog/components/category-client";
+import { absoluteUrl, breadcrumbJsonLd, collectionPageJsonLd, truncate } from "@/lib/seo";
+import type { CategoryDetail } from "@/types";
 
-function CategoryProductsBrowser({ categoryId }: { categoryId: string }) {
-  const router = useRouter();
-  const basePath = `/categories/${categoryId}`;
-  const controller = useCatalogFilters(basePath);
-  const productsQuery = useCategoryProducts(
-    categoryId,
-    catalogQueryParams(controller.values),
-  );
-
-  return (
-    <CatalogSection
-      controller={controller}
-      products={productsQuery.data?.data}
-      pagination={productsQuery.data?.pagination}
-      isPending={productsQuery.isPending}
-      isError={productsQuery.isError}
-      error={productsQuery.error}
-      refetch={() => void productsQuery.refetch()}
-      brandSuggestions={(productsQuery.data?.data ?? [])
-        .map((product) => product.brand)
-        .filter((brand): brand is string => brand !== null)}
-      hasActiveFilters={catalogHasActiveFilters(controller.values)}
-      onClearFilters={() => router.replace(basePath, { scroll: false })}
-    />
-  );
-}
-
-function CategoryView() {
-  const params = useParams<{ categoryId: string | string[] }>();
-  const rawId = params.categoryId;
-  const categoryId =
-    typeof rawId === "string"
-      ? rawId
-      : Array.isArray(rawId)
-        ? (rawId[0] ?? "")
-        : "";
-
-  const categoryQuery = useCategory(categoryId);
-
-  if (!categoryId) {
-    return (
-      <EmptyState
-        title="Category not found"
-        description="This category doesn't exist or is no longer available."
-        action={
-          <Link
-            href="/products"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-          >
-            Browse all products
-          </Link>
-        }
-      />
-    );
-  }
-
-  if (categoryQuery.isPending) {
-    return (
-      <div aria-hidden className="flex flex-col gap-8">
-        <div className="flex flex-col gap-3">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-96 max-w-full" />
-        </div>
-        <ProductGridSkeleton count={8} />
-      </div>
-    );
-  }
-
-  if (categoryQuery.isError) {
-    const status = normalizeApiError(categoryQuery.error).status;
-    if (status === 404 || status === 400) {
-      return (
-        <EmptyState
-          title="Category not found"
-          description="This category doesn't exist or is no longer available."
-          action={
-            <Link
-              href="/products"
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              Browse all products
-            </Link>
-          }
-        />
-      );
+async function fetchCategory(categoryId: string): Promise<CategoryDetail | null> {
+  const apiOrigin = (process.env.API_ORIGIN ?? "http://localhost:3000").trim().replace(/\/+$/, "");
+  try {
+    const res = await fetch(`${apiOrigin}/api/v1/categories/${categoryId}`, { next: { revalidate: 60 } });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { success?: boolean; data?: CategoryDetail } | CategoryDetail;
+    if (json && typeof json === "object" && "data" in json && (json as { data: CategoryDetail }).data) {
+      return (json as { data: CategoryDetail }).data;
     }
-    return (
-      <ErrorState
-        error={categoryQuery.error}
-        onRetry={() => void categoryQuery.refetch()}
-      />
-    );
+    return json as CategoryDetail;
+  } catch {
+    return null;
   }
-
-  const category = categoryQuery.data;
-
-  return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {category.name}
-          </h1>
-          <Badge variant="secondary">
-            {category.product_count}{" "}
-            {category.product_count === 1 ? "product" : "products"}
-          </Badge>
-        </div>
-        {category.description ? (
-          <p className="max-w-3xl text-sm text-muted-foreground">
-            {category.description}
-          </p>
-        ) : null}
-      </header>
-      <CategoryProductsBrowser categoryId={categoryId} />
-    </div>
-  );
 }
 
-export default function CategoryDetailPage() {
-  return (
-    <Suspense fallback={<CategoryFallback />}>
-      <CategoryView />
-    </Suspense>
-  );
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ categoryId: string }>;
+}): Promise<Metadata> {
+  const { categoryId } = await params;
+  const category = await fetchCategory(categoryId);
+  if (!category) {
+    return { title: "Category not found", robots: { index: false, follow: false } };
+  }
+  const description = category.description
+    ? truncate(category.description.replace(/\s+/g, " ").trim(), 155)
+    : `Browse ${category.name} — ${category.product_count} products in the Storefront catalog.`;
+  return {
+    title: category.name,
+    description,
+    alternates: { canonical: `/categories/${category.public_id}` },
+    openGraph: {
+      title: `${category.name} | Storefront`,
+      description,
+      url: absoluteUrl(`/categories/${category.public_id}`),
+      type: "website",
+    },
+    keywords: [category.name, category.slug, "category"].filter(Boolean),
+  };
 }
 
 function CategoryFallback() {
@@ -159,4 +61,48 @@ function CategoryFallback() {
       </div>
     </div>
   );
+}
+
+export default async function CategoryDetailPage({
+  params,
+}: {
+  params: Promise<{ categoryId: string }>;
+}) {
+  const { categoryId } = await params;
+  const category = await fetchCategory(categoryId);
+
+  const jsonLds: Array<Record<string, unknown>> = [];
+  if (category) {
+    jsonLds.push(
+      collectionPageJsonLd({
+        name: category.name,
+        description:
+          category.description ?? `Browse ${category.name} — ${category.product_count} products.`,
+        url: absoluteUrl(`/categories/${category.public_id}`),
+      }),
+    );
+    jsonLds.push(
+      breadcrumbJsonLd([
+        { name: "Home", url: absoluteUrl("/") },
+        { name: "Categories", url: absoluteUrl("/products") },
+        { name: category.name, url: absoluteUrl(`/categories/${category.public_id}`) },
+      ]),
+    );
+  }
+
+  return (
+    <>
+      {jsonLds.map((data, i) => (
+        <JsonLd key={i} data={data} />
+      ))}
+      <Suspense fallback={<CategoryFallback />}>
+        <CategoryClient />
+      </Suspense>
+    </>
+  );
+}
+
+// Keep compatibility for client hook that reads params; server fallback already provides SEO.
+export function generateViewport() {
+  return {};
 }

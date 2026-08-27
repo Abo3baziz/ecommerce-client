@@ -7,6 +7,36 @@ const apiOrigin = (process.env.API_ORIGIN ?? "http://localhost:3000")
   .replace(/\/+$/, "");
 
 const nextConfig: NextConfig = {
+  images: {
+    // ImageKit is the primary CDN for product/variant uploads; keep patterns explicit.
+    // Add additional hosts here if product images come from other CDNs.
+    remotePatterns: [
+      { protocol: "https", hostname: "ik.imagekit.io" },
+      { protocol: "https", hostname: "*.imagekit.io" },
+      { protocol: "https", hostname: "*.ik.imagekit.io" },
+    ],
+    formats: ["image/avif", "image/webp"],
+  },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
+      {
+        source: "/sitemap.xml",
+        headers: [{ key: "Content-Type", value: "application/xml" }],
+      },
+      {
+        source: "/robots.txt",
+        headers: [{ key: "Content-Type", value: "text/plain" }],
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

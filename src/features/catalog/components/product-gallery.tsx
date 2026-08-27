@@ -42,7 +42,11 @@ export function ProductGallery({
         <img
           src={selected.url}
           alt={selected.alt ?? productName}
-          loading="lazy"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          width={800}
+          height={800}
           className="aspect-square w-full object-cover"
         />
       </div>
@@ -69,8 +73,11 @@ export function ProductGallery({
             >
               <img
                 src={image.url}
-                alt=""
+                alt={image.alt ?? `${productName} — photo ${index + 1}`}
                 loading="lazy"
+                decoding="async"
+                width={64}
+                height={64}
                 className="size-full object-cover"
               />
             </button>

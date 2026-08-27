@@ -1,6 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Barlow, Barlow_Condensed, Overpass_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { JsonLd } from "@/components/seo/json-ld";
+import { organizationJsonLd, siteConfig, websiteJsonLd } from "@/lib/seo";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -23,11 +25,62 @@ const overpassMono = Overpass_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Storefront",
+    default: siteConfig.title,
     template: "%s | Storefront",
   },
-  description: "Ecommerce storefront and admin console",
+  description: siteConfig.description,
+  keywords: [...siteConfig.keywords],
+  authors: [siteConfig.author],
+  creator: siteConfig.author.name,
+  publisher: siteConfig.author.name,
+  applicationName: siteConfig.name,
+  category: "shopping",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: siteConfig.locale,
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    title: siteConfig.title,
+    description: siteConfig.description,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: siteConfig.title,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+    images: [siteConfig.ogImage],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  verification: {
+    // add when available: google: "...", yandex: "..."
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: siteConfig.themeColor,
+  colorScheme: "light dark",
 };
 
 const DIRECTION_CONTRACT = `
@@ -46,6 +99,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${barlow.variable} ${barlowCondensed.variable} ${overpassMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <JsonLd data={websiteJsonLd()} />
+        <JsonLd data={organizationJsonLd()} />
         <div
           hidden
           suppressHydrationWarning

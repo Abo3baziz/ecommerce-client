@@ -26,6 +26,9 @@ export function ProductCard({
             src={product.primary_image.image_url}
             alt={product.primary_image.alt_text ?? product.name}
             loading="lazy"
+            decoding="async"
+            width={400}
+            height={400}
             className="size-full object-cover transition-transform duration-300 [transition-timing-function:var(--ease-ballistic)] group-hover:scale-[1.04]"
           />
         ) : (
