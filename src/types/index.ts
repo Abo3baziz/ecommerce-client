@@ -11,4 +11,5 @@ export * from "./admin-users";
 export * from "./admin-stats";
 export * from "./admin-audit";
 export * from "./admin-analytics";
+export * from "./admin-reports";
 export * from "./coupons";

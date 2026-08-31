@@ -4,11 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
+  FileText,
   FolderTree,
   LayoutDashboard,
   Menu,
   MessageSquareText,
   Package,
+  ReceiptText,
+  Scale,
   ScrollText,
   ShieldCheck,
   ShoppingCart,
@@ -63,6 +66,13 @@ const ANALYTICS_NAV_ITEMS: ReadonlyArray<NavItem> = [
   { href: "/admin/analytics/expenses", label: "Expenses", icon: Warehouse },
 ];
 
+const REPORTS_NAV_ITEMS: ReadonlyArray<NavItem> = [
+  { href: "/admin/reports", label: "Reports", icon: FileText, exact: true },
+  { href: "/admin/reports/pnl", label: "P&L Statement", icon: Scale },
+  { href: "/admin/reports/revenue", label: "Revenue", icon: TrendingUp },
+  { href: "/admin/reports/expenses", label: "Expenses", icon: ReceiptText },
+];
+
 function useIsActive() {
   const pathname = usePathname();
   return (href: string, exact?: boolean) =>
@@ -110,6 +120,10 @@ function NavLinks({
           <div className="mt-3 border-t pt-2">
             <p className="label-caps px-3 pb-1">Analytics</p>
             {renderLinks(ANALYTICS_NAV_ITEMS)}
+          </div>
+          <div className="mt-3 border-t pt-2">
+            <p className="label-caps px-3 pb-1">Reports</p>
+            {renderLinks(REPORTS_NAV_ITEMS)}
           </div>
           <div className="mt-3 border-t pt-2">
             <p className="label-caps px-3 pb-1">Admin management</p>
