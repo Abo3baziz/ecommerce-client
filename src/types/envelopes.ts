@@ -53,6 +53,7 @@ export interface ApiError {
   status: number;
   code?: string;
   message: string;
+  errors?: Record<string, unknown>;
 }
 
 export function isEnvelope(value: unknown): value is Envelope<unknown> {

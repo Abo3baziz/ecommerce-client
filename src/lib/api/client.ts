@@ -30,6 +30,7 @@ export function normalizeApiError(error: unknown): ApiError {
             typeof err.message === "string"
               ? err.message
               : `Request failed (${status})`,
+          errors: isRecord(err) && isRecord((err as Record<string, unknown>).errors) ? ((err as Record<string, unknown>).errors as Record<string, unknown>) : undefined,
         };
       }
       if (typeof data.message === "string") {
@@ -37,6 +38,23 @@ export function normalizeApiError(error: unknown): ApiError {
           status,
           code: typeof data.code === "string" ? data.code : undefined,
           message: data.message,
+          errors: isRecord(data.errors) ? (data.errors as Record<string, unknown>) : undefined,
+        };
+      }
+      if (isRecord(data.errors) && typeof data.message === "string") {
+        return {
+          status,
+          code: typeof data.code === "string" ? data.code : undefined,
+          message: data.message,
+          errors: data.errors as Record<string, unknown>,
+        };
+      }
+      if (isRecord(data.errors)) {
+        return {
+          status,
+          message: typeof data.message === "string" ? data.message : `Request failed (${status})`,
+          code: typeof data.code === "string" ? data.code : undefined,
+          errors: data.errors as Record<string, unknown>,
         };
       }
     }
