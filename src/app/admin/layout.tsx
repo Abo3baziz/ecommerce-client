@@ -14,12 +14,12 @@ export default function AdminLayout({
   return (
     <AdminGate>
       <div className="flex h-screen overflow-hidden">
-        <aside className="hidden max-h-full w-60 shrink-0 self-start overflow-y-auto border-r bg-sidebar md:block">
+        <aside className="hidden w-60 shrink-0 flex-col border-r bg-sidebar md:flex">
           <AdminSidebar />
         </aside>
-        <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <AdminMobileNav />
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 min-w-0">{children}</main>
         </div>
       </div>
     </AdminGate>
