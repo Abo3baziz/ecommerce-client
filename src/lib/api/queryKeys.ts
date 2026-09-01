@@ -108,5 +108,7 @@ export const qk = {
 
     adminAccounts: (params: AdminAccountListParams = {}) =>
       ["admin-accounts", params] as const,
+
+    settings: (section?: string) => ["admin-settings", section ?? "all"] as const,
   },
 };

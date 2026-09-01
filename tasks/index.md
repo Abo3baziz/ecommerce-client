@@ -40,6 +40,7 @@ T00 ─► T01 ─► T02 ─► T03 ─► T04 ─► T06 ─┬─► T07 ─�
                                         ├─► T16                  (admin cat/inv)
                                         └─► T17                  (admin ord/rev/usr)
 T18 last (depends on everything)
+System epic: T31 ─► T32 ─► (T33‖T34‖T35‖T36‖T37‖T38‖T39‖T40) after backend T-100..T-104
 ```
 
 Infra chain T00→T06 is strictly sequential. After T07 the storefront, account, and admin
@@ -80,6 +81,16 @@ tracks can proceed in parallel; admin tasks additionally need T05 (ImageKit) and
 | T27 | [T27-coupon-analytics.md](T27-coupon-analytics.md) | Coupon insights inside Analytics (status counts, trends, most-used, revenue impact) | ✅ done |
 | T28 | [T28-admin-management.md](T28-admin-management.md) | Admin Management section (super-admin admin accounts + activity monitoring) | ✅ done |
 | T30 | [T30-imagekit-upload-hardening.md](T30-imagekit-upload-hardening.md) | ImageKit upload hardening: folders, save-time URL validation, review audit edges | ✅ done |
+| T31 | [T31-system-sidebar.md](T31-system-sidebar.md) | System sidebar “System” section (SUPER_ADMIN, 9 items) | done |
+| T32 | [T32-system-settings-api.md](T32-system-settings-api.md) | System settings API layer (types, client, query keys) | done |
+| T33 | [T33-system-general.md](T33-system-general.md) | System: General Settings page (12 fields, maintenance) | done |
+| T34 | [T34-system-commerce.md](T34-system-commerce.md) | System: Commerce Settings page (tax, limits, guest rules) | done |
+| T35 | [T35-system-payment.md](T35-system-payment.md) | System: Payment Settings page (masked secrets) | done |
+| T36 | [T36-system-shipping.md](T36-system-shipping.md) | System: Shipping Settings page (zones, rates) | done |
+| T37 | [T37-system-email.md](T37-system-email.md) | System: Email & Notifications page (11 toggles, test email) | done |
+| T38 | [T38-system-customer.md](T38-system-customer.md) | System: Customer Settings page (10 fields) | done |
+| T39 | [T39-system-security.md](T39-system-security.md) | System: Security page (overview + policies) | done |
+| T40 | [T40-system-admins-financial.md](T40-system-admins-financial.md) | System: Admin & Permissions + Financial pages | done |
 
 ## Definition of Done (applies to every task)
 
