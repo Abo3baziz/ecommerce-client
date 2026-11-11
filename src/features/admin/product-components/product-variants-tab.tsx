@@ -52,6 +52,7 @@ import { useUpdateSearchParams } from "@/features/admin/product-components/use-u
 import { VariantDialog } from "@/features/admin/product-components/variant-dialog";
 import { VariantImagesManager } from "@/features/admin/product-components/variant-images-manager";
 import { ReserveInventoryDialog } from "@/features/admin/inventory-components/reserve-inventory-dialog";
+import { useSession } from "@/features/auth/session-context";
 
 const VARIANT_SORTS = ["sku", "price", "created_at", "updated_at"] as const;
 type VariantSortField = (typeof VARIANT_SORTS)[number];
@@ -78,6 +79,7 @@ export function ProductVariantsTab({ productId }: { productId: string }) {
   const searchParams = useSearchParams();
   const updateParams = useUpdateSearchParams();
   const queryClient = useQueryClient();
+  const { isReadOnlyDemo } = useSession();
 
   const status = parseStatus(searchParams.get("status"));
   const includeDeleted = searchParams.get("deleted") === "1";
@@ -207,16 +209,18 @@ export function ProductVariantsTab({ productId }: { productId: string }) {
             </SelectContent>
           </Select>
         </div>
-        <Button
-          className="ml-auto"
-          onClick={() => {
-            setEditingVariant(null);
-            setDialogOpen(true);
-          }}
-        >
-          <Plus className="size-4" aria-hidden />
-          New variant
-        </Button>
+        {!isReadOnlyDemo ? (
+          <Button
+            className="ml-auto"
+            onClick={() => {
+              setEditingVariant(null);
+              setDialogOpen(true);
+            }}
+          >
+            <Plus className="size-4" aria-hidden />
+            New variant
+          </Button>
+        ) : null}
       </div>
 
       {query.isLoading ? (
@@ -255,6 +259,7 @@ export function ProductVariantsTab({ productId }: { productId: string }) {
                   productId={productId}
                   variant={variant}
                   dimmed={includeDeleted}
+                  readOnly={isReadOnlyDemo}
                   expanded={expandedId === variant.public_id}
                   onToggleExpand={() =>
                     setExpandedId((current) =>
@@ -278,7 +283,7 @@ export function ProductVariantsTab({ productId }: { productId: string }) {
         </>
       ) : null}
 
-      {dialogOpen ? (
+      {dialogOpen && !isReadOnlyDemo ? (
         <VariantDialog
           key={editingVariant?.public_id ?? "new-variant"}
           productId={productId}
@@ -288,32 +293,36 @@ export function ProductVariantsTab({ productId }: { productId: string }) {
         />
       ) : null}
 
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingDelete(null);
-        }}
-        title="Delete this variant?"
-        description={
-          pendingDelete
-            ? `Variant "${pendingDelete.sku}" will be soft-deleted and hidden from the store and checkout.`
-            : undefined
-        }
-        confirmLabel="Delete variant"
-        destructive
-        onConfirm={async () => {
-          await confirmDelete().catch(() => undefined);
-        }}
-      />
+      {!isReadOnlyDemo ? (
+        <ConfirmDialog
+          open={pendingDelete !== null}
+          onOpenChange={(open) => {
+            if (!open) setPendingDelete(null);
+          }}
+          title="Delete this variant?"
+          description={
+            pendingDelete
+              ? `Variant "${pendingDelete.sku}" will be soft-deleted and hidden from the store and checkout.`
+              : undefined
+          }
+          confirmLabel="Delete variant"
+          destructive
+          onConfirm={async () => {
+            await confirmDelete().catch(() => undefined);
+          }}
+        />
+      ) : null}
 
-      <ReserveInventoryDialog
-        open={reservingVariant !== null}
-        variantPublicId={reservingVariant?.public_id ?? ""}
-        title={reservingVariant?.sku ?? undefined}
-        onOpenChange={(open) => {
-          if (!open) setReservingVariant(null);
-        }}
-      />
+      {!isReadOnlyDemo ? (
+        <ReserveInventoryDialog
+          open={reservingVariant !== null}
+          variantPublicId={reservingVariant?.public_id ?? ""}
+          title={reservingVariant?.sku ?? undefined}
+          onOpenChange={(open) => {
+            if (!open) setReservingVariant(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -323,6 +332,7 @@ function VariantRows({
   variant,
   dimmed,
   expanded,
+  readOnly,
   onToggleExpand,
   onEdit,
   onDelete,
@@ -332,6 +342,7 @@ function VariantRows({
   variant: AdminVariant;
   dimmed: boolean;
   expanded: boolean;
+  readOnly: boolean;
   onToggleExpand: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -379,34 +390,38 @@ function VariantRows({
             >
               <Images className="size-4" aria-hidden />
             </TooltipIconButton>
-            <TooltipIconButton
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              label="Manage reserve"
-              onClick={onReserve}
-            >
-              <Lock className="size-4" aria-hidden />
-            </TooltipIconButton>
-            <TooltipIconButton
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              label="Edit variant"
-              onClick={onEdit}
-            >
-              <Pencil className="size-4" aria-hidden />
-            </TooltipIconButton>
-            <TooltipIconButton
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="text-destructive hover:text-destructive"
-              label="Delete variant"
-              onClick={onDelete}
-            >
-              <Trash2 className="size-4" aria-hidden />
-            </TooltipIconButton>
+            {!readOnly ? (
+              <>
+                <TooltipIconButton
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  label="Manage reserve"
+                  onClick={onReserve}
+                >
+                  <Lock className="size-4" aria-hidden />
+                </TooltipIconButton>
+                <TooltipIconButton
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  label="Edit variant"
+                  onClick={onEdit}
+                >
+                  <Pencil className="size-4" aria-hidden />
+                </TooltipIconButton>
+                <TooltipIconButton
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-destructive hover:text-destructive"
+                  label="Delete variant"
+                  onClick={onDelete}
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                </TooltipIconButton>
+              </>
+            ) : null}
           </div>
         </TableCell>
       </TableRow>

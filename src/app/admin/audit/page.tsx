@@ -80,7 +80,11 @@ function statusClass(status: number): string {
 }
 
 export default function AdminAuditPage() {
-  const { isSuperAdmin, superAdminProbePending } = useSession();
+  const { isSuperAdmin, superAdminProbePending, isReadOnlyDemo } = useSession();
+  // Private even in public demo mode: the backend rejects these reads.
+  if (isReadOnlyDemo) {
+    return <ForbiddenCard message="This section is not available in the public read-only demo." />;
+  }
 
   if (superAdminProbePending) {
     return (
@@ -158,7 +162,7 @@ function AuditTable() {
           <Label htmlFor="audit-actor">Actor ID</Label>
           <Input
             id="audit-actor"
-            placeholder="usr_…"
+            placeholder="usr_â€¦"
             autoComplete="off"
             value={actorFilter.value}
             onChange={(e) => actorFilter.onChange(e.target.value)}
@@ -274,7 +278,7 @@ function AuditTable() {
                     {formatDateTime(entry.created_at)}
                   </TableCell>
                   <TableCell>
-                    <span className="block text-sm">{entry.actor.name ?? "—"}</span>
+                    <span className="block text-sm">{entry.actor.name ?? "â€”"}</span>
                     <span className="block text-xs text-muted-foreground">
                       {entry.actor.email ?? "anonymous"}
                     </span>
@@ -315,7 +319,7 @@ function AuditTable() {
                   {selected.action}
                 </DialogTitle>
                 <DialogDescription>
-                  {formatDateTime(selected.created_at)} · by{" "}
+                  {formatDateTime(selected.created_at)} آ· by{" "}
                   {selected.actor.name ?? "anonymous"}
                   {selected.actor.email ? ` (${selected.actor.email})` : ""}
                 </DialogDescription>
@@ -330,18 +334,18 @@ function AuditTable() {
                 <dt className="text-muted-foreground">Entity</dt>
                 <dd className="break-all">
                   {selected.entity_type
-                    ? `${selected.entity_type} · ${selected.entity_public_id ?? "—"}`
-                    : "—"}
+                    ? `${selected.entity_type} آ· ${selected.entity_public_id ?? "â€”"}`
+                    : "â€”"}
                 </dd>
                 <dt className="text-muted-foreground">Request</dt>
                 <dd className="break-all font-mono text-xs">
                   {selected.method} {selected.path}
                 </dd>
                 <dt className="text-muted-foreground">IP</dt>
-                <dd>{selected.ip_address ?? "—"}</dd>
+                <dd>{selected.ip_address ?? "â€”"}</dd>
                 <dt className="text-muted-foreground">User agent</dt>
                 <dd className="break-all text-xs text-muted-foreground">
-                  {selected.user_agent ?? "—"}
+                  {selected.user_agent ?? "â€”"}
                 </dd>
               </dl>
               {selected.request_body !== null &&

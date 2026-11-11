@@ -39,7 +39,11 @@ const schema = z.object({
 });
 type FormValues = z.infer<typeof schema>;
 export default function CommerceSettingsPage() {
-  const { isSuperAdmin, superAdminProbePending } = useSession();
+  const { isSuperAdmin, superAdminProbePending, isReadOnlyDemo } = useSession();
+  // Private even in public demo mode: the backend rejects these reads.
+  if (isReadOnlyDemo) {
+    return <ForbiddenCard message="This section is not available in the public read-only demo." />;
+  }
   if (superAdminProbePending) return <div className="flex flex-col gap-4"><Skeleton className="h-8 w-56" /><Skeleton className="h-96 w-full" /></div>;
   if (!isSuperAdmin) return <ForbiddenCard message="System settings are only available to the platform super admin." />;
   return <CommerceForm />;
@@ -92,7 +96,7 @@ function CommerceForm() {
           <div className="grid gap-2"><Label>Refund window (days)</Label><Input type="number" {...form.register("refund_window_days")} /></div>
           <div className="grid gap-2"><Label>Low-stock threshold</Label><Input type="number" {...form.register("low_stock_threshold")} /></div>
         </CardContent></Card>
-        <div className="flex items-center gap-3"><Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">{mutation.isPending ? "Saving…" : "Save changes"}</Button>{isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}<Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button></div>
+        <div className="flex items-center gap-3"><Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">{mutation.isPending ? "Savingâ€¦" : "Save changes"}</Button>{isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}<Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button></div>
       </form>
     </div>
   );

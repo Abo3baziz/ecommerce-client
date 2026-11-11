@@ -21,7 +21,7 @@ import {
 import { useSession } from "@/features/auth/session-context";
 
 export function AccountMenu() {
-  const { user, isAdmin, signOut, isLoading } = useSession();
+  const { user, isAdmin, isReadOnlyDemo, signOut, isLoading } = useSession();
 
   if (isLoading) {
     return null;
@@ -30,6 +30,14 @@ export function AccountMenu() {
   if (!user) {
     return (
       <div className="flex items-center gap-2">
+        {isReadOnlyDemo ? (
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
+            <Link href="/admin">
+              <ShieldCheck className="size-4" aria-hidden />
+              Admin dashboard
+            </Link>
+          </Button>
+        ) : null}
         <Button asChild variant="ghost" size="sm">
           <Link href="/login">Sign in</Link>
         </Button>

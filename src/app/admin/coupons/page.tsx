@@ -57,6 +57,7 @@ import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useUpdateSearchParams } from "@/features/admin/product-components/use-update-search-params";
+import { useSession } from "@/features/auth/session-context";
 import {
   createCoupon,
   deleteCoupon,
@@ -88,6 +89,7 @@ export default function CouponsPage() {
   const searchParams = useSearchParams();
   const updateParams = useUpdateSearchParams();
   const queryClient = useQueryClient();
+  const { isReadOnlyDemo } = useSession();
 
   const [searchInput, setSearchInput] = useState(
     searchParams.get("search") ?? "",
@@ -169,10 +171,12 @@ export default function CouponsPage() {
             Discount codes customers can apply at checkout.
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="size-4" aria-hidden />
-          New coupon
-        </Button>
+        {!isReadOnlyDemo ? (
+          <Button onClick={openCreate}>
+            <Plus className="size-4" aria-hidden />
+            New coupon
+          </Button>
+        ) : null}
       </div>
 
       <Card>
@@ -282,14 +286,20 @@ export default function CouponsPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-3">
-                          <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Switch
-                              checked={coupon.is_active}
-                              disabled={coupon.deleted_at !== null}
-                              onCheckedChange={() => void handleToggleActive(coupon)}
-                            />
-                            Active
-                          </label>
+                          {!isReadOnlyDemo ? (
+                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Switch
+                                checked={coupon.is_active}
+                                disabled={coupon.deleted_at !== null}
+                                onCheckedChange={() => void handleToggleActive(coupon)}
+                              />
+                              Active
+                            </label>
+                          ) : (
+                            <span className="text-xs text-muted-foreground" title="Read-only in demo mode">
+                              {coupon.is_active ? "Active" : "Inactive"}
+                            </span>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"
@@ -297,26 +307,30 @@ export default function CouponsPage() {
                           >
                             Usage
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={coupon.deleted_at !== null}
-                            onClick={() => {
-                              setEditing(coupon);
-                              setFormOpen(true);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled={coupon.deleted_at !== null}
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                            onClick={() => setDeleting(coupon)}
-                          >
-                            Delete
-                          </Button>
+                          {!isReadOnlyDemo ? (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={coupon.deleted_at !== null}
+                                onClick={() => {
+                                  setEditing(coupon);
+                                  setFormOpen(true);
+                                }}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={coupon.deleted_at !== null}
+                                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                onClick={() => setDeleting(coupon)}
+                              >
+                                Delete
+                              </Button>
+                            </>
+                          ) : null}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -332,34 +346,38 @@ export default function CouponsPage() {
         </CardContent>
       </Card>
 
-      <CouponFormDialog
-        open={formOpen}
-        coupon={editing}
-        onClose={() => {
-          setEditing(null);
-          setFormOpen(false);
-        }}
-        onSaved={invalidate}
-      />
+      {!isReadOnlyDemo ? (
+        <CouponFormDialog
+          open={formOpen}
+          coupon={editing}
+          onClose={() => {
+            setEditing(null);
+            setFormOpen(false);
+          }}
+          onSaved={invalidate}
+        />
+      ) : null}
 
       <UsageDrawer
         coupon={usageFor}
         onClose={() => setUsageFor(null)}
       />
 
-      <ConfirmDialog
-        open={deleting !== null}
-        onOpenChange={(open) => !open && setDeleting(null)}
-        title="Delete this coupon?"
-        description={
-          deleting
-            ? `"${deleting.code}" will be soft-deleted and stop working at checkout. Its redemption history stays available via the include-deleted toggle.`
-            : undefined
-        }
-        confirmLabel="Delete coupon"
-        destructive
-        onConfirm={handleDelete}
-      />
+      {!isReadOnlyDemo ? (
+        <ConfirmDialog
+          open={deleting !== null}
+          onOpenChange={(open) => !open && setDeleting(null)}
+          title="Delete this coupon?"
+          description={
+            deleting
+              ? `"${deleting.code}" will be soft-deleted and stop working at checkout. Its redemption history stays available via the include-deleted toggle.`
+              : undefined
+          }
+          confirmLabel="Delete coupon"
+          destructive
+          onConfirm={handleDelete}
+        />
+      ) : null}
     </div>
   );
 }

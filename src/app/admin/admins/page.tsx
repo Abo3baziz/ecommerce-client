@@ -56,7 +56,11 @@ function parsePage(value: string | null): number {
 }
 
 export default function AdminManagementPage() {
-  const { isSuperAdmin, superAdminProbePending } = useSession();
+  const { isSuperAdmin, superAdminProbePending, isReadOnlyDemo } = useSession();
+  // Private even in public demo mode: the backend rejects these reads.
+  if (isReadOnlyDemo) {
+    return <ForbiddenCard message="This section is not available in the public read-only demo." />;
+  }
 
   if (superAdminProbePending) {
     return (
@@ -143,7 +147,7 @@ function AdminsTable() {
       <div className="flex flex-wrap items-center gap-3">
         <Input
           aria-label="Search admins"
-          placeholder="Search name or email…"
+          placeholder="Search name or emailâ€¦"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           className="w-60"
@@ -235,8 +239,8 @@ function AdminsTable() {
                   </TableCell>
                   <TableCell className="max-w-52 truncate text-xs text-muted-foreground">
                     {account.last_action_type
-                      ? `${account.last_action_type} · ${formatDateTime(account.last_action_at)}`
-                      : "—"}
+                      ? `${account.last_action_type} آ· ${formatDateTime(account.last_action_at)}`
+                      : "â€”"}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDateTime(account.created_at)}
@@ -318,7 +322,7 @@ function SortHead({
         )}
       >
         {label}
-        {active ? (dir === "asc" ? "↑" : "↓") : ""}
+        {active ? (dir === "asc" ? "â†‘" : "â†“") : ""}
       </button>
     </TableHead>
   );
@@ -346,7 +350,7 @@ function AdminDetailDrawer({
           <DrawerHeader className="px-0">
             <DrawerTitle>{account ? `${account.first_name} ${account.last_name}` : ""}</DrawerTitle>
             <DrawerDescription>
-              {account ? `${account.role} · ${account.email}` : ""}
+              {account ? `${account.role} آ· ${account.email}` : ""}
             </DrawerDescription>
           </DrawerHeader>
 
@@ -374,8 +378,8 @@ function AdminDetailDrawer({
                   <dt className="text-muted-foreground">Last action</dt>
                   <dd>
                     {account.last_action_type
-                      ? `${account.last_action_type} · ${formatDateTime(account.last_action_at)}`
-                      : "—"}
+                      ? `${account.last_action_type} آ· ${formatDateTime(account.last_action_at)}`
+                      : "â€”"}
                   </dd>
                   <dt className="text-muted-foreground">Created</dt>
                   <dd>{formatDateTime(account.created_at)}</dd>

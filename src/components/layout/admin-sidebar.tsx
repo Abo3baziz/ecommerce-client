@@ -108,7 +108,7 @@ function NavLinks({
   onNavigate?: () => void;
 }) {
   const isActive = useIsActive();
-  const { isSuperAdmin } = useSession();
+  const { isSuperAdmin, isReadOnlyDemo } = useSession();
   const [systemOpen, setSystemOpen] = useState(() => {
     if (typeof window === "undefined") return true;
     try {
@@ -156,43 +156,50 @@ function NavLinks({
             <p className="label-caps px-3 pb-1">Reports</p>
             {renderLinks(REPORTS_NAV_ITEMS)}
           </div>
-          <div className="mt-3 border-t pt-2">
-            <button
-              type="button"
-              onClick={() => {
-                const next = !systemOpen;
-                setSystemOpen(next);
-                try {
-                  window.localStorage.setItem("admin-system-open", String(next));
-                } catch {
-                  // ignore
-                }
-              }}
-              aria-expanded={systemOpen}
-              aria-controls="system-nav"
-              className={cn(
-                "flex w-full items-center justify-between rounded-none px-3 py-1 text-left transition-colors",
-                isSystemActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <span className="label-caps">System</span>
-              <ChevronDown
-                className={cn("size-3.5 shrink-0 transition-transform", systemOpen ? "rotate-180" : "rotate-0")}
-                aria-hidden
-              />
-            </button>
-            <div id="system-nav" className={cn("mt-1 flex flex-col gap-1", !systemOpen && "hidden")}>
-              {renderLinks(SYSTEM_SETTINGS_NAV_ITEMS)}
-            </div>
-          </div>
-          <div className="mt-3 border-t pt-2">
-            <p className="label-caps px-3 pb-1">Admin management</p>
-            {renderLinks(ADMIN_MGMT_NAV_ITEMS)}
-            <div className="mt-3 border-t pt-2">
-              <p className="label-caps px-3 pb-1">Governance</p>
-              {renderLinks(SUPER_ADMIN_NAV_ITEMS)}
-            </div>
-          </div>
+          {/* Private super-admin sections (platform configuration, staff
+              accounts, audit trail) stay behind real authentication even in
+              public demo mode — the backend rejects them for demo visitors. */}
+          {!isReadOnlyDemo ? (
+            <>
+              <div className="mt-3 border-t pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !systemOpen;
+                    setSystemOpen(next);
+                    try {
+                      window.localStorage.setItem("admin-system-open", String(next));
+                    } catch {
+                      // ignore
+                    }
+                  }}
+                  aria-expanded={systemOpen}
+                  aria-controls="system-nav"
+                  className={cn(
+                    "flex w-full items-center justify-between rounded-none px-3 py-1 text-left transition-colors",
+                    isSystemActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <span className="label-caps">System</span>
+                  <ChevronDown
+                    className={cn("size-3.5 shrink-0 transition-transform", systemOpen ? "rotate-180" : "rotate-0")}
+                    aria-hidden
+                  />
+                </button>
+                <div id="system-nav" className={cn("mt-1 flex flex-col gap-1", !systemOpen && "hidden")}>
+                  {renderLinks(SYSTEM_SETTINGS_NAV_ITEMS)}
+                </div>
+              </div>
+              <div className="mt-3 border-t pt-2">
+                <p className="label-caps px-3 pb-1">Admin management</p>
+                {renderLinks(ADMIN_MGMT_NAV_ITEMS)}
+                <div className="mt-3 border-t pt-2">
+                  <p className="label-caps px-3 pb-1">Governance</p>
+                  {renderLinks(SUPER_ADMIN_NAV_ITEMS)}
+                </div>
+              </div>
+            </>
+          ) : null}
         </>
       ) : null}
     </nav>
@@ -200,6 +207,8 @@ function NavLinks({
 }
 
 export function AdminSidebar() {
+  const { isReadOnlyDemo } = useSession();
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex h-16 shrink-0 items-center gap-2.5 border-b px-4">
@@ -217,6 +226,11 @@ export function AdminSidebar() {
             Operations console
           </span>
         </span>
+        {isReadOnlyDemo ? (
+          <span className="ml-auto border border-amber-300 bg-amber-100 px-1.5 py-0.5 label-caps text-[0.625rem] text-amber-950">
+            Demo
+          </span>
+        ) : null}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-gutter:stable]">
         <NavLinks />
@@ -229,9 +243,13 @@ export function AdminSidebar() {
           <Store className="size-4" aria-hidden />
           Back to store
         </Link>
-        <div className="mt-1 px-1">
-          <AccountMenu />
-        </div>
+        {/* The account menu is the sign-in/out surface; hidden for anonymous
+            demo visitors where it has no meaning. */}
+        {!isReadOnlyDemo ? (
+          <div className="mt-1 px-1">
+            <AccountMenu />
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -239,6 +257,7 @@ export function AdminSidebar() {
 
 export function AdminMobileNav() {
   const [open, setOpen] = useState(false);
+  const { isReadOnlyDemo } = useSession();
 
   return (
     <nav
@@ -298,8 +317,13 @@ export function AdminMobileNav() {
           Admin
         </span>
         <span className="label-caps">Operations console</span>
+        {isReadOnlyDemo ? (
+          <span className="border border-amber-300 bg-amber-100 px-1.5 py-0.5 label-caps text-[0.625rem] text-amber-950">
+            Demo
+          </span>
+        ) : null}
       </span>
-      <AccountMenu />
+      {!isReadOnlyDemo ? <AccountMenu /> : null}
     </nav>
   );
 }

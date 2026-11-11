@@ -29,6 +29,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { PaginationFromStandard } from "@/components/shared/pagination";
 import { qk } from "@/lib/api/queryKeys";
+import { useSession } from "@/features/auth/session-context";
 import type { AdminProductListParams } from "@/types/catalog";
 import { listAdminProducts } from "@/features/admin/products-api";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -266,6 +267,7 @@ function ProductsTable() {
 
 function ProductsPageContent() {
   const [createOpen, setCreateOpen] = useState(false);
+  const { isReadOnlyDemo } = useSession();
 
   return (
     <div className="flex flex-col gap-6">
@@ -276,13 +278,17 @@ function ProductsPageContent() {
             Manage the catalog, its variants and imagery.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="size-4" aria-hidden />
-          New product
-        </Button>
+        {!isReadOnlyDemo ? (
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" aria-hidden />
+            New product
+          </Button>
+        ) : null}
       </div>
       <ProductsTable />
-      <CreateProductDialog open={createOpen} onOpenChange={setCreateOpen} />
+      {!isReadOnlyDemo ? (
+        <CreateProductDialog open={createOpen} onOpenChange={setCreateOpen} />
+      ) : null}
     </div>
   );
 }

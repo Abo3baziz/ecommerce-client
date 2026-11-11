@@ -50,6 +50,7 @@ import {
   productImageFormSchema,
   type ProductImageFormValues,
 } from "@/features/admin/product-components/product-schemas";
+import { useSession } from "@/features/auth/session-context";
 
 function sortedByOrder(images: AdminProductImage[]): AdminProductImage[] {
   return [...images].sort((a, b) => a.display_order - b.display_order);
@@ -61,6 +62,7 @@ export function ProductImagesTab({ productId }: { productId: string }) {
   const [pendingDelete, setPendingDelete] = useState<AdminProductImage | null>(
     null,
   );
+  const { isReadOnlyDemo } = useSession();
 
   const query = useQuery({
     queryKey: qk.admin.productImages(productId),
@@ -122,10 +124,12 @@ export function ProductImagesTab({ productId }: { productId: string }) {
           The gallery is ordered by display order. The primary image is the
           storefront cover.
         </p>
-        <Button onClick={() => setAddOpen(true)}>
-          <Plus className="size-4" aria-hidden />
-          Add image
-        </Button>
+        {!isReadOnlyDemo ? (
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="size-4" aria-hidden />
+            Add image
+          </Button>
+        ) : null}
       </div>
 
       {query.isLoading ? (
@@ -161,57 +165,59 @@ export function ProductImagesTab({ productId }: { productId: string }) {
                     ? ` · ${img.alt_text}`
                     : ""}
                 </span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <TooltipIconButton
-                      variant="ghost"
-                      size="icon-sm"
-                      side="left"
-                      label={`Actions for image ${img.display_order}`}
-                    >
-                      <MoreVertical className="size-4" aria-hidden />
-                    </TooltipIconButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {!img.is_primary ? (
-                      <DropdownMenuItem
-                        disabled={setPrimaryMutation.isPending}
-                        onSelect={() =>
-                          setPrimaryMutation.mutate({
-                            imageId: img.public_id,
-                            isPrimary: true,
-                          })
-                        }
+                {!isReadOnlyDemo ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <TooltipIconButton
+                        variant="ghost"
+                        size="icon-sm"
+                        side="left"
+                        label={`Actions for image ${img.display_order}`}
                       >
-                        <Star className="size-4" aria-hidden />
-                        Set as primary
-                      </DropdownMenuItem>
-                    ) : (
+                        <MoreVertical className="size-4" aria-hidden />
+                      </TooltipIconButton>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {!img.is_primary ? (
+                        <DropdownMenuItem
+                          disabled={setPrimaryMutation.isPending}
+                          onSelect={() =>
+                            setPrimaryMutation.mutate({
+                              imageId: img.public_id,
+                              isPrimary: true,
+                            })
+                          }
+                        >
+                          <Star className="size-4" aria-hidden />
+                          Set as primary
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem
+                          disabled={
+                            images.length <= 1 || setPrimaryMutation.isPending
+                          }
+                          onSelect={() =>
+                            setPrimaryMutation.mutate({
+                              imageId: img.public_id,
+                              isPrimary: false,
+                            })
+                          }
+                        >
+                          <StarOff className="size-4" aria-hidden />
+                          Clear primary marker
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        disabled={
-                          images.length <= 1 || setPrimaryMutation.isPending
-                        }
-                        onSelect={() =>
-                          setPrimaryMutation.mutate({
-                            imageId: img.public_id,
-                            isPrimary: false,
-                          })
-                        }
+                        variant="destructive"
+                        onSelect={() => setPendingDelete(img)}
                       >
-                        <StarOff className="size-4" aria-hidden />
-                        Clear primary marker
+                        <Trash2 className="size-4" aria-hidden />
+                        Remove image
                       </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onSelect={() => setPendingDelete(img)}
-                    >
-                      <Trash2 className="size-4" aria-hidden />
-                      Remove image
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : null}
               </div>
               {img.is_primary ? (
                 <span className="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-amber-300">
@@ -224,32 +230,36 @@ export function ProductImagesTab({ productId }: { productId: string }) {
         </ul>
       )}
 
-      <AddImageDialog
-        productId={productId}
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        existingCount={images.length}
-        onAdded={() => invalidate()}
-      />
+      {!isReadOnlyDemo ? (
+        <AddImageDialog
+          productId={productId}
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          existingCount={images.length}
+          onAdded={() => invalidate()}
+        />
+      ) : null}
 
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingDelete(null);
-        }}
-        title="Remove this image?"
-        description={
-          pendingDelete?.is_primary
-            ? "This is the primary image. After removal the image with the lowest display order is promoted to primary automatically."
-            : "The image is permanently deleted from the product gallery."
-        }
-        confirmLabel="Remove image"
-        destructive
-        onConfirm={async () => {
-          if (!pendingDelete) return;
-          await deleteMutation.mutateAsync(pendingDelete.public_id).catch(() => undefined);
-        }}
-      />
+      {!isReadOnlyDemo ? (
+        <ConfirmDialog
+          open={pendingDelete !== null}
+          onOpenChange={(open) => {
+            if (!open) setPendingDelete(null);
+          }}
+          title="Remove this image?"
+          description={
+            pendingDelete?.is_primary
+              ? "This is the primary image. After removal the image with the lowest display order is promoted to primary automatically."
+              : "The image is permanently deleted from the product gallery."
+          }
+          confirmLabel="Remove image"
+          destructive
+          onConfirm={async () => {
+            if (!pendingDelete) return;
+            await deleteMutation.mutateAsync(pendingDelete.public_id).catch(() => undefined);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

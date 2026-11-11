@@ -58,6 +58,7 @@ import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { formatDate } from "@/lib/format";
 import { EditUserDialog } from "@/features/admin/user-components/edit-user-dialog";
 import { UserRoleDialog } from "@/features/admin/user-components/user-role-dialog";
+import { useSession } from "@/features/auth/session-context";
 import { useUpdateSearchParams } from "@/features/admin/product-components/use-update-search-params";
 
 const USER_SORTS = ["name", "email", "created_at"] as const;
@@ -123,6 +124,7 @@ function UsersTable() {
   const searchParams = useSearchParams();
   const updateParams = useUpdateSearchParams();
   const queryClient = useQueryClient();
+  const { isReadOnlyDemo } = useSession();
 
   const [editing, setEditing] = useState<AdminCustomer | null>(null);
   const [changingRoleFor, setChangingRoleFor] = useState<AdminCustomer | null>(
@@ -360,51 +362,53 @@ function UsersTable() {
                       {formatDate(user.created_at)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <TooltipIconButton
-                            variant="ghost"
-                            size="icon-sm"
-                            side="left"
-                            label={`Actions for ${user.email}`}
-                          >
-                            <EllipsisVertical aria-hidden className="size-4" />
-                          </TooltipIconButton>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setEditing(user)}>
-                            <Pencil aria-hidden className="size-4" />
-                            Edit details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() =>
-                              setChangingRoleFor(user)
-                            }
-                          >
-                            <Shield aria-hidden className="size-4" />
-                            Change role
-                          </DropdownMenuItem>
-                          {user.status === "ACTIVE" ? (
+                      {!isReadOnlyDemo ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <TooltipIconButton
+                              variant="ghost"
+                              size="icon-sm"
+                              side="left"
+                              label={`Actions for ${user.email}`}
+                            >
+                              <EllipsisVertical aria-hidden className="size-4" />
+                            </TooltipIconButton>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setEditing(user)}>
+                              <Pencil aria-hidden className="size-4" />
+                              Edit details
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
-                                setStatusAction({ user, action: "suspend" })
+                                setChangingRoleFor(user)
                               }
                             >
-                              <Ban aria-hidden className="size-4" />
-                              Suspend
+                              <Shield aria-hidden className="size-4" />
+                              Change role
                             </DropdownMenuItem>
-                          ) : user.status === "SUSPENDED" ? (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                setStatusAction({ user, action: "activate" })
-                              }
-                            >
-                              <Check aria-hidden className="size-4" />
-                              Activate
-                            </DropdownMenuItem>
-                          ) : null}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            {user.status === "ACTIVE" ? (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  setStatusAction({ user, action: "suspend" })
+                                }
+                              >
+                                <Ban aria-hidden className="size-4" />
+                                Suspend
+                              </DropdownMenuItem>
+                            ) : user.status === "SUSPENDED" ? (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  setStatusAction({ user, action: "activate" })
+                                }
+                              >
+                                <Check aria-hidden className="size-4" />
+                                Activate
+                              </DropdownMenuItem>
+                            ) : null}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : null}
                     </TableCell>
                   </TableRow>
               ))}
@@ -419,48 +423,52 @@ function UsersTable() {
         </>
       )}
 
-      {editing ? (
-        <EditUserDialog
-          open
-          user={editing}
-          onOpenChange={(open) => {
-            if (!open) setEditing(null);
-          }}
-        />
+      {!isReadOnlyDemo ? (
+        <>
+          {editing ? (
+            <EditUserDialog
+              open
+              user={editing}
+              onOpenChange={(open) => {
+                if (!open) setEditing(null);
+              }}
+            />
+          ) : null}
+
+          {changingRoleFor ? (
+            <UserRoleDialog
+              open
+              user={changingRoleFor}
+              onOpenChange={(open) => {
+                if (!open) setChangingRoleFor(null);
+              }}
+            />
+          ) : null}
+
+          <ConfirmDialog
+            open={statusAction?.action === "suspend"}
+            onOpenChange={(open) => {
+              if (!open) setStatusAction(null);
+            }}
+            title={`Suspend ${statusAction?.user.first_name ?? ""} ${statusAction?.user.last_name ?? ""}?`}
+            description="Suspending this account revokes all of their active sessions immediately and blocks new sign-ins."
+            confirmLabel="Suspend user"
+            destructive
+            onConfirm={runStatusAction}
+          />
+
+          <ConfirmDialog
+            open={statusAction?.action === "activate"}
+            onOpenChange={(open) => {
+              if (!open) setStatusAction(null);
+            }}
+            title={`Activate ${statusAction?.user.first_name ?? ""} ${statusAction?.user.last_name ?? ""}?`}
+            description="The customer will be able to sign in again immediately."
+            confirmLabel="Activate user"
+            onConfirm={runStatusAction}
+          />
+        </>
       ) : null}
-
-      {changingRoleFor ? (
-        <UserRoleDialog
-          open
-          user={changingRoleFor}
-          onOpenChange={(open) => {
-            if (!open) setChangingRoleFor(null);
-          }}
-        />
-      ) : null}
-
-      <ConfirmDialog
-        open={statusAction?.action === "suspend"}
-        onOpenChange={(open) => {
-          if (!open) setStatusAction(null);
-        }}
-        title={`Suspend ${statusAction?.user.first_name ?? ""} ${statusAction?.user.last_name ?? ""}?`}
-        description="Suspending this account revokes all of their active sessions immediately and blocks new sign-ins."
-        confirmLabel="Suspend user"
-        destructive
-        onConfirm={runStatusAction}
-      />
-
-      <ConfirmDialog
-        open={statusAction?.action === "activate"}
-        onOpenChange={(open) => {
-          if (!open) setStatusAction(null);
-        }}
-        title={`Activate ${statusAction?.user.first_name ?? ""} ${statusAction?.user.last_name ?? ""}?`}
-        description="The customer will be able to sign in again immediately."
-        confirmLabel="Activate user"
-        onConfirm={runStatusAction}
-      />
     </div>
   );
 }

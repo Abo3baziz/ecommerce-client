@@ -35,7 +35,11 @@ const schema = z.object({
 }).superRefine((d, ctx) => { if (Number(d.min_transaction) > Number(d.max_transaction)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["max_transaction"], message: "max must be >= min" }); });
 type FormValues = z.infer<typeof schema>;
 export default function PaymentSettingsPage() {
-  const { isSuperAdmin, superAdminProbePending } = useSession();
+  const { isSuperAdmin, superAdminProbePending, isReadOnlyDemo } = useSession();
+  // Private even in public demo mode: the backend rejects these reads.
+  if (isReadOnlyDemo) {
+    return <ForbiddenCard message="This section is not available in the public read-only demo." />;
+  }
   if (superAdminProbePending) return <div className="flex flex-col gap-4"><Skeleton className="h-8 w-56" /><Skeleton className="h-96 w-full" /></div>;
   if (!isSuperAdmin) return <ForbiddenCard message="System settings are only available to the platform super admin." />;
   return <PaymentForm />;
@@ -101,7 +105,7 @@ function PaymentForm() {
           <div className="grid gap-2"><Label>Max transaction</Label><Input {...form.register("max_transaction")} />{form.formState.errors.max_transaction && <p className="text-sm text-destructive">{form.formState.errors.max_transaction.message}</p>}</div>
           <div className="grid gap-2"><Label>Failure behavior</Label><Select value={form.watch("payment_failure_behavior")} onValueChange={(v) => form.setValue("payment_failure_behavior", v as FormValues["payment_failure_behavior"], { shouldDirty: true })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="retry">Retry</SelectItem><SelectItem value="hold">Hold</SelectItem><SelectItem value="fail">Fail</SelectItem></SelectContent></Select></div>
         </CardContent></Card>
-        <div className="flex items-center gap-3"><Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">{mutation.isPending ? "Saving…" : "Save changes"}</Button>{isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}<Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button></div>
+        <div className="flex items-center gap-3"><Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">{mutation.isPending ? "Savingâ€¦" : "Save changes"}</Button>{isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}<Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button></div>
       </form>
     </div>
   );

@@ -42,6 +42,7 @@ import { formatDate } from "@/lib/format";
 import { CategoryFormDialog } from "@/features/admin/category-components/category-form-dialog";
 import { CategoryProductsDialog } from "@/features/admin/category-components/category-products-dialog";
 import { useUpdateSearchParams } from "@/features/admin/product-components/use-update-search-params";
+import { useSession } from "@/features/auth/session-context";
 
 const CATEGORY_SORTS = ["name", "created_at", "updated_at"] as const;
 type CategorySortField = (typeof CATEGORY_SORTS)[number];
@@ -87,6 +88,7 @@ function CategoriesTable() {
   const searchParams = useSearchParams();
   const updateParams = useUpdateSearchParams();
   const queryClient = useQueryClient();
+  const { isReadOnlyDemo } = useSession();
 
   const [editing, setEditing] = useState<AdminCategory | null>(null);
   const [managingProductsFor, setManagingProductsFor] =
@@ -279,17 +281,26 @@ function CategoriesTable() {
                     {category.slug}
                   </TableCell>
                   <TableCell>
-                    <Switch
-                      checked={category.is_active}
-                      disabled={
-                        togglingId === category.public_id &&
-                        toggleActiveMutation.isPending
-                      }
-                      aria-label={`Toggle visibility for ${category.name}`}
-                      onCheckedChange={(checked) =>
-                        handleToggle(category, checked)
-                      }
-                    />
+                    {!isReadOnlyDemo ? (
+                      <Switch
+                        checked={category.is_active}
+                        disabled={
+                          togglingId === category.public_id &&
+                          toggleActiveMutation.isPending
+                        }
+                        aria-label={`Toggle visibility for ${category.name}`}
+                        onCheckedChange={(checked) =>
+                          handleToggle(category, checked)
+                        }
+                      />
+                    ) : (
+                      <span
+                        className="text-sm text-muted-foreground"
+                        title="Read-only in demo mode"
+                      >
+                        {category.is_active ? "Visible" : "Hidden"}
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell className="tabular-nums">
                     {(category as CategoryRow).product_count ?? "—"}
@@ -299,28 +310,32 @@ function CategoriesTable() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setManagingProductsFor(category)}
-                      >
-                        Products
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditing(category)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => setDeleting(category)}
-                      >
-                        Delete
-                      </Button>
+                      {!isReadOnlyDemo ? (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setManagingProductsFor(category)}
+                          >
+                            Products
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditing(category)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setDeleting(category)}
+                          >
+                            Delete
+                          </Button>
+                        </>
+                      ) : null}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -336,58 +351,63 @@ function CategoriesTable() {
         </>
       )}
 
-      {editing ? (
-        <CategoryFormDialog
-          open
-          onOpenChange={(open) => {
-            if (!open) setEditing(null);
-          }}
-          category={editing}
-        />
-      ) : null}
+      {!isReadOnlyDemo ? (
+        <>
+          {editing ? (
+            <CategoryFormDialog
+              open
+              onOpenChange={(open) => {
+                if (!open) setEditing(null);
+              }}
+              category={editing}
+            />
+          ) : null}
 
-      {managingProductsFor ? (
-        <CategoryProductsDialog
-          open
-          onOpenChange={(open) => {
-            if (!open) setManagingProductsFor(null);
-          }}
-          categoryId={managingProductsFor.public_id}
-          categoryName={managingProductsFor.name}
-        />
-      ) : null}
+          {managingProductsFor ? (
+            <CategoryProductsDialog
+              open
+              onOpenChange={(open) => {
+                if (!open) setManagingProductsFor(null);
+              }}
+              categoryId={managingProductsFor.public_id}
+              categoryName={managingProductsFor.name}
+            />
+          ) : null}
 
-      <ConfirmDialog
-        open={deleting !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleting(null);
-        }}
-        title={`Delete “${deleting?.name ?? ""}”?`}
-        description="Deleting this category also removes its product links. The products themselves stay, but they will no longer belong to this category."
-        confirmLabel="Delete category"
-        destructive
-        onConfirm={async () => {
-          if (!deleting) return;
-          try {
-            await deleteAdminCategory(deleting.public_id);
-            toast.success("Category deleted");
-            await queryClient.invalidateQueries({
-              queryKey: ["admin-categories"],
-            });
-            await queryClient.invalidateQueries({ queryKey: qk.categories() });
-          } catch (error) {
-            const apiError = error as ApiError;
-            toast.error(apiError.message || "Could not delete the category.");
-            throw error;
-          }
-        }}
-      />
+          <ConfirmDialog
+            open={deleting !== null}
+            onOpenChange={(open) => {
+              if (!open) setDeleting(null);
+            }}
+            title={`Delete “${deleting?.name ?? ""}”?`}
+            description="Deleting this category also removes its product links. The products themselves stay, but they will no longer belong to this category."
+            confirmLabel="Delete category"
+            destructive
+            onConfirm={async () => {
+              if (!deleting) return;
+              try {
+                await deleteAdminCategory(deleting.public_id);
+                toast.success("Category deleted");
+                await queryClient.invalidateQueries({
+                  queryKey: ["admin-categories"],
+                });
+                await queryClient.invalidateQueries({ queryKey: qk.categories() });
+              } catch (error) {
+                const apiError = error as ApiError;
+                toast.error(apiError.message || "Could not delete the category.");
+                throw error;
+              }
+            }}
+          />
+        </>
+      ) : null}
     </div>
   );
 }
 
 function CategoriesPageContent() {
   const [createOpen, setCreateOpen] = useState(false);
+  const { isReadOnlyDemo } = useSession();
 
   return (
     <div className="flex flex-col gap-6">
@@ -398,13 +418,17 @@ function CategoriesPageContent() {
             Organize products into storefront categories.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="size-4" aria-hidden />
-          New category
-        </Button>
+        {!isReadOnlyDemo ? (
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" aria-hidden />
+            New category
+          </Button>
+        ) : null}
       </div>
       <CategoriesTable />
-      <CategoryFormDialog open={createOpen} onOpenChange={setCreateOpen} />
+      {!isReadOnlyDemo ? (
+        <CategoryFormDialog open={createOpen} onOpenChange={setCreateOpen} />
+      ) : null}
     </div>
   );
 }

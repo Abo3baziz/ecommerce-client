@@ -40,7 +40,11 @@ const schema = z.object({
 });
 type FormValues = z.infer<typeof schema>;
 export default function EmailSettingsPage() {
-  const { isSuperAdmin, superAdminProbePending } = useSession();
+  const { isSuperAdmin, superAdminProbePending, isReadOnlyDemo } = useSession();
+  // Private even in public demo mode: the backend rejects these reads.
+  if (isReadOnlyDemo) {
+    return <ForbiddenCard message="This section is not available in the public read-only demo." />;
+  }
   if (superAdminProbePending) return <div className="flex flex-col gap-4"><Skeleton className="h-8 w-56" /><Skeleton className="h-96 w-full" /></div>;
   if (!isSuperAdmin) return <ForbiddenCard message="System settings are only available to the platform super admin." />;
   return <EmailForm />;
@@ -86,7 +90,7 @@ function EmailForm() {
         </CardContent></Card>
         <Card className="rounded-none"><CardHeader><CardTitle>Provider</CardTitle></CardHeader><CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-2"><Label>Provider</Label><Select value={form.watch("provider")} onValueChange={(v) => form.setValue("provider", v as FormValues["provider"], { shouldDirty: true })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="resend">Resend</SelectItem><SelectItem value="smtp">SMTP</SelectItem><SelectItem value="ses">SES</SelectItem></SelectContent></Select></div>
-          <div className="grid gap-2"><Label>SMTP password (masked)</Label><div className="flex gap-2"><Input type={showPass ? "text" : "password"} placeholder={form.watch("smtp_password") === "[redacted]" ? "[redacted]" : "••••"} {...form.register("smtp_password")} /><Button type="button" variant="outline" className="rounded-none" onClick={() => setShowPass((s) => !s)}>{showPass ? "Hide" : "Show"}</Button></div><p className="text-xs text-muted-foreground">Leave [redacted] to preserve.</p></div>
+          <div className="grid gap-2"><Label>SMTP password (masked)</Label><div className="flex gap-2"><Input type={showPass ? "text" : "password"} placeholder={form.watch("smtp_password") === "[redacted]" ? "[redacted]" : "â€¢â€¢â€¢â€¢"} {...form.register("smtp_password")} /><Button type="button" variant="outline" className="rounded-none" onClick={() => setShowPass((s) => !s)}>{showPass ? "Hide" : "Show"}</Button></div><p className="text-xs text-muted-foreground">Leave [redacted] to preserve.</p></div>
         </CardContent></Card>
         <Card className="rounded-none"><CardHeader><CardTitle>Notifications</CardTitle><CardDescription>Toggle each email trigger.</CardDescription></CardHeader><CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Object.entries(notifs).map(([key, val]) => (
@@ -95,9 +99,9 @@ function EmailForm() {
         </CardContent></Card>
         <Card className="rounded-none"><CardHeader><CardTitle>Test email</CardTitle></CardHeader><CardContent className="flex gap-2">
           <Input placeholder="test@example.com" value={testTo} onChange={(e) => setTestTo(e.target.value)} className="max-w-sm" />
-          <Button type="button" variant="outline" className="rounded-none" onClick={() => testMutation.mutate()} disabled={testMutation.isPending || !testTo}> {testMutation.isPending ? "Sending…" : "Send test"}</Button>
+          <Button type="button" variant="outline" className="rounded-none" onClick={() => testMutation.mutate()} disabled={testMutation.isPending || !testTo}> {testMutation.isPending ? "Sendingâ€¦" : "Send test"}</Button>
         </CardContent></Card>
-        <div className="flex items-center gap-3"><Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">{mutation.isPending ? "Saving…" : "Save changes"}</Button>{isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}<Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button></div>
+        <div className="flex items-center gap-3"><Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">{mutation.isPending ? "Savingâ€¦" : "Save changes"}</Button>{isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}<Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button></div>
       </form>
     </div>
   );
