@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Barlow, Barlow_Condensed, Overpass_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { JsonLd } from "@/components/seo/json-ld";
+import { WakeBanner } from "@/components/layout/wake-banner";
 import { organizationJsonLd, siteConfig, websiteJsonLd } from "@/lib/seo";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -99,6 +100,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${barlow.variable} ${barlowCondensed.variable} ${overpassMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <WakeBanner />
         <JsonLd data={websiteJsonLd()} />
         <JsonLd data={organizationJsonLd()} />
         <div
