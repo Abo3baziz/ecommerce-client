@@ -1,5 +1,6 @@
 import { AdminGate } from "@/components/guards";
 import { AdminMobileNav, AdminSidebar } from "@/components/layout/admin-sidebar";
+import { DemoModeBanner } from "@/components/layout/demo-banner";
 
 export const metadata = {
   title: "Admin",
@@ -13,13 +14,16 @@ export default function AdminLayout({
 }) {
   return (
     <AdminGate>
-      <div className="flex h-screen overflow-hidden">
-        <aside className="hidden w-60 shrink-0 flex-col border-r bg-sidebar md:flex">
-          <AdminSidebar />
-        </aside>
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <AdminMobileNav />
-          <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 min-w-0">{children}</main>
+      <div className="flex h-screen flex-col overflow-hidden">
+        <DemoModeBanner />
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          <aside className="hidden w-60 shrink-0 flex-col border-r bg-sidebar md:flex">
+            <AdminSidebar />
+          </aside>
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+            <AdminMobileNav />
+            <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 min-w-0">{children}</main>
+          </div>
         </div>
       </div>
     </AdminGate>

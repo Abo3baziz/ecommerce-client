@@ -87,6 +87,7 @@ export default function AnalyticsExpensesPage() {
 }
 
 function ExpensesTable() {
+  const { isReadOnlyDemo } = useSession();
   const searchParams = useSearchParams();
   const updateParams = useUpdateSearchParams();
   const queryClient = useQueryClient();
@@ -141,15 +142,17 @@ function ExpensesTable() {
             Operating costs feeding net profit in Analytics.
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setEditing(null);
-            setFormOpen(true);
-          }}
-        >
-          <Plus className="size-4" aria-hidden />
-          Add expense
-        </Button>
+        {!isReadOnlyDemo ? (
+          <Button
+            onClick={() => {
+              setEditing(null);
+              setFormOpen(true);
+            }}
+          >
+            <Plus className="size-4" aria-hidden />
+            Add expense
+          </Button>
+        ) : null}
       </div>
 
       <Card>
@@ -215,26 +218,28 @@ function ExpensesTable() {
                         <Money value={expense.amount} />
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setEditing(expense);
-                              setFormOpen(true);
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                            onClick={() => setDeleting(expense)}
-                          >
-                            Delete
-                          </Button>
-                        </div>
+                        {!isReadOnlyDemo ? (
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEditing(expense);
+                                setFormOpen(true);
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                              onClick={() => setDeleting(expense)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        ) : null}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -249,29 +254,33 @@ function ExpensesTable() {
         </CardContent>
       </Card>
 
-      <ExpenseFormDialog
-        open={formOpen}
-        expense={editing}
-        onClose={() => {
-          setEditing(null);
-          setFormOpen(false);
-        }}
-        onSaved={() => invalidate()}
-      />
+      {!isReadOnlyDemo ? (
+        <ExpenseFormDialog
+          open={formOpen}
+          expense={editing}
+          onClose={() => {
+            setEditing(null);
+            setFormOpen(false);
+          }}
+          onSaved={() => invalidate()}
+        />
+      ) : null}
 
-      <ConfirmDialog
-        open={deleting !== null}
-        onOpenChange={(open) => !open && setDeleting(null)}
-        title="Delete this expense?"
-        description={
-          deleting
-            ? `"${deleting.description}" (${deleting.amount}) will be permanently removed and net profit will recalculate.`
-            : undefined
-        }
-        confirmLabel="Delete expense"
-        destructive
-        onConfirm={handleDelete}
-      />
+      {!isReadOnlyDemo ? (
+        <ConfirmDialog
+          open={deleting !== null}
+          onOpenChange={(open) => !open && setDeleting(null)}
+          title="Delete this expense?"
+          description={
+            deleting
+              ? `"${deleting.description}" (${deleting.amount}) will be permanently removed and net profit will recalculate.`
+              : undefined
+          }
+          confirmLabel="Delete expense"
+          destructive
+          onConfirm={handleDelete}
+        />
+      ) : null}
     </div>
   );
 }

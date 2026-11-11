@@ -92,17 +92,19 @@ function AnalyticsDashboard() {
   const searchParams = useSearchParams();
   const updateParams = useUpdateSearchParams();
 
-  const preset = parsePreset(searchParams.get("preset"));
+  const rawPreset = parsePreset(searchParams.get("preset"));
   const customFrom = searchParams.get("from") ?? "";
   const customTo = searchParams.get("to") ?? "";
 
-  // Server defaults to the last 30 days when no bounds are given.
+  // Default selection is the last 90 days; custom bounds opt out explicitly.
+  const preset =
+    rawPreset ?? (customFrom === "" && customTo === "" ? "90d" : null);
+
   const params: Record<string, string | undefined> = {};
   if (preset === "7d") params.date_from = daysAgo(7);
+  else if (preset === "30d") params.date_from = daysAgo(30);
   else if (preset === "90d") params.date_from = daysAgo(90);
-  else if (preset === undefined && customFrom === "" && customTo === "") {
-    params.date_from = daysAgo(30);
-  } else if (customFrom !== "") params.date_from = customFrom;
+  else if (customFrom !== "") params.date_from = customFrom;
   if (customTo !== "") params.date_to = `${customTo}T23:59:59.999Z`;
 
   const query = useQuery({

@@ -39,7 +39,11 @@ function securityStatus(v: FormValues): "hardened" | "partial" | "weak" {
   return "weak";
 }
 export default function SecuritySettingsPage() {
-  const { isSuperAdmin, superAdminProbePending } = useSession();
+  const { isSuperAdmin, superAdminProbePending, isReadOnlyDemo } = useSession();
+  // Private even in public demo mode: the backend rejects these reads.
+  if (isReadOnlyDemo) {
+    return <ForbiddenCard message="This section is not available in the public read-only demo." />;
+  }
   if (superAdminProbePending) return <div className="flex flex-col gap-4"><Skeleton className="h-8 w-56" /><Skeleton className="h-96 w-full" /></div>;
   if (!isSuperAdmin) return <ForbiddenCard message="System settings are only available to the platform super admin." />;
   return <SecurityForm />;
@@ -73,7 +77,7 @@ function SecurityForm() {
       <div><h1 className="text-2xl font-semibold tracking-tight">Security</h1><p className="mt-1 text-sm text-muted-foreground">Session, rate limiting, password policy and alerts.</p></div>
       <Card className="rounded-none"><CardHeader><CardTitle>Security overview</CardTitle><CardDescription>Computed from enabled protections.</CardDescription></CardHeader><CardContent className="flex items-center gap-3">
         <Badge variant={status === "hardened" ? "default" : status === "partial" ? "secondary" : "destructive"} className="rounded-none uppercase tracking-wide">{status}</Badge>
-        <span className="text-sm text-muted-foreground">2FA admins: {form.watch("require_2fa_admins") ? "on" : "off"} · Email verification: {form.watch("require_email_verification") ? "on" : "off"} · Login alerts: {form.watch("login_notifications") ? "on" : "off"}</span>
+        <span className="text-sm text-muted-foreground">2FA admins: {form.watch("require_2fa_admins") ? "on" : "off"} آ· Email verification: {form.watch("require_email_verification") ? "on" : "off"} آ· Login alerts: {form.watch("login_notifications") ? "on" : "off"}</span>
       </CardContent></Card>
       <form onSubmit={form.handleSubmit((v) => mutation.mutate(v), handleSettingsInvalid)} className="flex flex-col gap-6" noValidate>
         <Card className="rounded-none"><CardHeader><CardTitle>Session & lockout</CardTitle></CardHeader><CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -96,7 +100,7 @@ function SecurityForm() {
           <div className="flex items-center justify-between rounded-md border p-3"><span className="text-sm">Login notifications</span><Switch checked={form.watch("login_notifications")} onCheckedChange={(v) => form.setValue("login_notifications", v, { shouldDirty: true })} /></div>
           <div className="flex items-center justify-between rounded-md border p-3"><span className="text-sm">Suspicious alerts</span><Switch checked={form.watch("suspicious_login_alerts")} onCheckedChange={(v) => form.setValue("suspicious_login_alerts", v, { shouldDirty: true })} /></div>
         </CardContent></Card>
-        <div className="flex items-center gap-3"><Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">{mutation.isPending ? "Saving…" : "Save changes"}</Button>{isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}<Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button></div>
+        <div className="flex items-center gap-3"><Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">{mutation.isPending ? "Savingâ€¦" : "Save changes"}</Button>{isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}<Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button></div>
       </form>
     </div>
   );

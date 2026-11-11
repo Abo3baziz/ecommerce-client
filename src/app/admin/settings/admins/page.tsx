@@ -29,7 +29,11 @@ const schema = z.object({
 });
 type FormValues = z.infer<typeof schema>;
 export default function AdminPermissionsPage() {
-  const { isSuperAdmin, superAdminProbePending } = useSession();
+  const { isSuperAdmin, superAdminProbePending, isReadOnlyDemo } = useSession();
+  // Private even in public demo mode: the backend rejects these reads.
+  if (isReadOnlyDemo) {
+    return <ForbiddenCard message="This section is not available in the public read-only demo." />;
+  }
   if (superAdminProbePending) return <div className="flex flex-col gap-4"><Skeleton className="h-8 w-56" /><Skeleton className="h-96 w-full" /></div>;
   if (!isSuperAdmin) return <ForbiddenCard message="System settings are only available to the platform super admin." />;
   return <AdminForm />;
@@ -67,7 +71,7 @@ function AdminForm() {
           <div className="flex items-center justify-between rounded-md border p-3"><span className="text-sm">Active sessions tracking</span><Switch checked={form.watch("active_sessions_tracking")} onCheckedChange={(v) => form.setValue("active_sessions_tracking", v, { shouldDirty: true })} /></div>
           <div className="flex items-center justify-between rounded-md border border-destructive/40 bg-destructive/5 p-3"><span className="text-sm font-medium text-destructive">Force password reset</span><Switch checked={form.watch("force_password_reset")} onCheckedChange={(v) => form.setValue("force_password_reset", v, { shouldDirty: true })} /></div>
         </CardContent></Card>
-        <div className="flex items-center gap-3"><Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">{mutation.isPending ? "Saving…" : "Save changes"}</Button>{isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}<Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button><Button type="button" variant="outline" className="rounded-none" onClick={() => router.push("/admin/admins")}>Manage Admins</Button></div>
+        <div className="flex items-center gap-3"><Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">{mutation.isPending ? "Savingâ€¦" : "Save changes"}</Button>{isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}<Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button><Button type="button" variant="outline" className="rounded-none" onClick={() => router.push("/admin/admins")}>Manage Admins</Button></div>
       </form>
     </div>
   );

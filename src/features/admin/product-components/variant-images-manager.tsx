@@ -28,6 +28,7 @@ import {
 } from "@/features/admin/product-components/product-schemas";
 import type { VariantImage } from "@/types/catalog";
 import type { ApiError } from "@/types/envelopes";
+import { useSession } from "@/features/auth/session-context";
 
 function isDisplayOrderConflict(error: ApiError): boolean {
   return error.code === "DISPLAY_ORDER_CONFLICT";
@@ -42,6 +43,7 @@ export function VariantImagesManager({
 }) {
   const queryClient = useQueryClient();
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const { isReadOnlyDemo } = useSession();
 
   const query = useQuery({
     queryKey: qk.admin.variantImages(productId, variantId),
@@ -154,6 +156,7 @@ export function VariantImagesManager({
             <VariantImageRow
               key={`${img.public_id}-${img.display_order}`}
               image={img}
+              readOnly={isReadOnlyDemo}
               saving={reorderMutation.isPending}
               onSaveOrder={(displayOrder) =>
                 reorderMutation.mutate({
@@ -167,11 +170,12 @@ export function VariantImagesManager({
         </ul>
       )}
 
-      <form
-        onSubmit={form.handleSubmit((values) => addMutation.mutate(values))}
-        noValidate
-        className="flex flex-col gap-3 rounded-lg border border-dashed bg-background p-3"
-      >
+      {!isReadOnlyDemo ? (
+        <form
+          onSubmit={form.handleSubmit((values) => addMutation.mutate(values))}
+          noValidate
+          className="flex flex-col gap-3 rounded-lg border border-dashed bg-background p-3"
+        >
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_7rem]">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor={`vimg-url-${variantId}`}>Image URL</Label>
@@ -235,33 +239,38 @@ export function VariantImagesManager({
           />
         </div>
       </form>
+      ) : null}
 
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingDelete(null);
-        }}
-        title="Remove this variant image?"
-        description="The image is permanently deleted from the variant gallery."
-        confirmLabel="Remove image"
-        destructive
-        onConfirm={async () => {
-          if (pendingDelete) {
-            await deleteMutation.mutateAsync(pendingDelete).catch(() => undefined);
-          }
-        }}
-      />
+      {!isReadOnlyDemo ? (
+        <ConfirmDialog
+          open={pendingDelete !== null}
+          onOpenChange={(open) => {
+            if (!open) setPendingDelete(null);
+          }}
+          title="Remove this variant image?"
+          description="The image is permanently deleted from the variant gallery."
+          confirmLabel="Remove image"
+          destructive
+          onConfirm={async () => {
+            if (pendingDelete) {
+              await deleteMutation.mutateAsync(pendingDelete).catch(() => undefined);
+            }
+          }}
+        />
+      ) : null}
     </div>
   );
 }
 
 function VariantImageRow({
   image,
+  readOnly,
   saving,
   onSaveOrder,
   onRemove,
 }: {
   image: VariantImage;
+  readOnly: boolean;
   saving: boolean;
   onSaveOrder: (displayOrder: number) => void;
   onRemove: () => void;
@@ -283,45 +292,47 @@ function VariantImageRow({
       >
         {image.alt_text || image.image_url}
       </span>
-      <div className="flex items-center gap-2">
-        <Label htmlFor={`order-${image.public_id}`} className="sr-only">
-          Display order
-        </Label>
-        <Input
-          id={`order-${image.public_id}`}
-          type="number"
-          min={0}
-          className="w-20"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-        />
-        <TooltipIconButton
-          type="button"
-          variant="outline"
-          size="icon"
-          side="left"
-          label={`Save display order for ${image.alt_text || "image"}`}
-          disabled={!dirty || saving}
-          onClick={() => onSaveOrder(Number(draft))}
-        >
-          {saving ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden />
-          ) : (
-            <Save className="size-4" aria-hidden />
-          )}
-        </TooltipIconButton>
-        <TooltipIconButton
-          type="button"
-          variant="ghost"
-          size="icon"
-          side="left"
-          className="text-destructive hover:text-destructive"
-          label="Remove image"
-          onClick={onRemove}
-        >
-          <Trash2 className="size-4" aria-hidden />
-        </TooltipIconButton>
-      </div>
+      {!readOnly ? (
+        <div className="flex items-center gap-2">
+          <Label htmlFor={`order-${image.public_id}`} className="sr-only">
+            Display order
+          </Label>
+          <Input
+            id={`order-${image.public_id}`}
+            type="number"
+            min={0}
+            className="w-20"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+          <TooltipIconButton
+            type="button"
+            variant="outline"
+            size="icon"
+            side="left"
+            label={`Save display order for ${image.alt_text || "image"}`}
+            disabled={!dirty || saving}
+            onClick={() => onSaveOrder(Number(draft))}
+          >
+            {saving ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+            ) : (
+              <Save className="size-4" aria-hidden />
+            )}
+          </TooltipIconButton>
+          <TooltipIconButton
+            type="button"
+            variant="ghost"
+            size="icon"
+            side="left"
+            className="text-destructive hover:text-destructive"
+            label="Remove image"
+            onClick={onRemove}
+          >
+            <Trash2 className="size-4" aria-hidden />
+          </TooltipIconButton>
+        </div>
+      ) : null}
     </li>
   );
 }

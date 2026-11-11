@@ -38,7 +38,11 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function GeneralSettingsPage() {
-  const { isSuperAdmin, superAdminProbePending } = useSession();
+  const { isSuperAdmin, superAdminProbePending, isReadOnlyDemo } = useSession();
+  // Private even in public demo mode: the backend rejects these reads.
+  if (isReadOnlyDemo) {
+    return <ForbiddenCard message="This section is not available in the public read-only demo." />;
+  }
   if (superAdminProbePending) return <div className="flex flex-col gap-4"><Skeleton className="h-8 w-56" /><Skeleton className="h-96 w-full" /></div>;
   if (!isSuperAdmin) return <ForbiddenCard message="System settings are only available to the platform super admin." />;
   return <GeneralForm />;
@@ -112,7 +116,7 @@ function GeneralForm() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">General Settings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Global store configuration — name, contact, locale, and availability.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Global store configuration â€” name, contact, locale, and availability.</p>
       </div>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-6" noValidate>
@@ -132,7 +136,7 @@ function GeneralForm() {
             <div className="grid gap-2">
               <Label htmlFor="logo_url">Store logo URL (plan only)</Label>
               <Input id="logo_url" placeholder="https://ik.imagekit.io/.../logo.png" {...form.register("logo_url")} />
-              <p className="text-xs text-muted-foreground">Upload via ImageKit widget — coming soon. Leave empty to keep default.</p>
+              <p className="text-xs text-muted-foreground">Upload via ImageKit widget â€” coming soon. Leave empty to keep default.</p>
               {form.formState.errors.logo_url && <p className="text-sm text-destructive">{form.formState.errors.logo_url.message}</p>}
             </div>
           </CardContent>
@@ -209,7 +213,7 @@ function GeneralForm() {
               <Switch checked={form.watch("store_active")} onCheckedChange={(v) => form.setValue("store_active", v, { shouldDirty: true })} />
             </div>
             <div className="flex items-center justify-between gap-4 rounded-md border border-destructive/40 bg-destructive/5 p-3">
-              <div><p className="text-sm font-medium text-destructive">Maintenance mode</p><p className="text-xs text-muted-foreground">When on, customers see “Store under maintenance”.</p></div>
+              <div><p className="text-sm font-medium text-destructive">Maintenance mode</p><p className="text-xs text-muted-foreground">When on, customers see â€œStore under maintenanceâ€‌.</p></div>
               <Switch checked={form.watch("maintenance_mode")} onCheckedChange={(v) => form.setValue("maintenance_mode", v, { shouldDirty: true })} />
             </div>
           </CardContent>
@@ -217,7 +221,7 @@ function GeneralForm() {
 
         <div className="flex items-center gap-3">
           <Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">
-            {mutation.isPending ? "Saving…" : "Save changes"}
+            {mutation.isPending ? "Savingâ€¦" : "Save changes"}
           </Button>
           {isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}
           <Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button>

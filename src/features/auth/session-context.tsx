@@ -15,6 +15,7 @@ import { resetAuthCookies } from "@/lib/api/client";
 import { clearCsrfToken, getCsrfToken } from "@/lib/api/csrf";
 import { qk } from "@/lib/api/queryKeys";
 import { onSessionExpired } from "@/lib/api/session-events";
+import { DEMO_MODE, demoSessionOverrides, setAdminWriteAllowed } from "@/lib/demo";
 import { getSession, ensureCsrfToken, logout as logoutRequest } from "./api";
 
 export interface SessionContextValue {
@@ -24,6 +25,8 @@ export interface SessionContextValue {
   adminProbePending: boolean;
   isSuperAdmin: boolean;
   superAdminProbePending: boolean;
+  /** Public demo visitor: admin-visible UI, but every write is blocked. */
+  isReadOnlyDemo: boolean;
   refreshSession: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -48,6 +51,12 @@ export function SessionProvider({ children }: SessionProviderProps) {
 
   const user = sessionQuery.data?.user ?? null;
 
+  // Demo mode: the axios layer blocks /admin writes for visitors (no user)
+  // and re-enables them for signed-in admins. No-op when demo mode is off.
+  useEffect(() => {
+    setAdminWriteAllowed(user !== null);
+  }, [user]);
+
   useEffect(() => {
     if (!sessionQuery.isPending && user && !getCsrfToken()) {
       void ensureCsrfToken().catch(() => undefined);
@@ -70,10 +79,12 @@ export function SessionProvider({ children }: SessionProviderProps) {
     refetchOnWindowFocus: false,
   });
 
-  // Sessions expose no role; super-admin status is a probe of a
-  // super-admin-only endpoint (200 vs 403). The backend always enforces
-  // real authorization — this only drives UI visibility.
-  const isAdminKnown = adminProbeQuery.data === true;
+  // Sessions expose no role; admin/super-admin status is probed against
+  // admin-only endpoints (200 vs 403). The backend always enforces real
+  // authorization — this only drives UI visibility. In demo mode the probes
+  // are skipped and demoSessionOverrides elevates the UI instead.
+  const demoFlags = demoSessionOverrides(DEMO_MODE, user !== null);
+  const isAdminKnown = adminProbeQuery.data === true || demoFlags.isAdmin;
   const superAdminProbeQuery = useQuery({
     queryKey: ["super-admin-probe"],
     queryFn: async () => {
@@ -127,11 +138,13 @@ export function SessionProvider({ children }: SessionProviderProps) {
     () => ({
       user,
       isLoading: sessionQuery.isPending || signingOut,
-      isAdmin: adminProbeQuery.data === true,
-      adminProbePending: adminProbeQuery.isPending,
-      isSuperAdmin: superAdminProbeQuery.data === true,
-      superAdminProbePending:
-        adminProbeQuery.isPending || superAdminProbeQuery.isPending,
+      isAdmin: demoFlags.isAdmin || adminProbeQuery.data === true,
+      adminProbePending: DEMO_MODE ? false : adminProbeQuery.isPending,
+      isSuperAdmin: demoFlags.isSuperAdmin || superAdminProbeQuery.data === true,
+      superAdminProbePending: DEMO_MODE
+        ? false
+        : adminProbeQuery.isPending || superAdminProbeQuery.isPending,
+      isReadOnlyDemo: demoFlags.readOnly,
       refreshSession,
       signOut,
     }),
@@ -139,6 +152,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
       user,
       sessionQuery.isPending,
       signingOut,
+      demoFlags,
       adminProbeQuery.data,
       adminProbeQuery.isPending,
       superAdminProbeQuery.data,

@@ -30,12 +30,14 @@ import {
 } from "@/features/admin/product-components/product-schemas";
 import type { AdminProductDetail } from "@/types/catalog";
 import type { ApiError } from "@/types/envelopes";
+import { useSession } from "@/features/auth/session-context";
 
 export function ProductDetailsTab({ product }: { product: AdminProductDetail }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [rootError, setRootError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const { isReadOnlyDemo } = useSession();
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -166,46 +168,52 @@ export function ProductDetailsTab({ product }: { product: AdminProductDetail }) 
                   </p>
                 ) : null}
               </div>
-              <div>
-                <Button type="submit" disabled={saveMutation.isPending}>
-                  {saveMutation.isPending ? "Saving…" : "Save changes"}
-                </Button>
-              </div>
+              {!isReadOnlyDemo ? (
+                <div>
+                  <Button type="submit" disabled={saveMutation.isPending}>
+                    {saveMutation.isPending ? "Saving…" : "Save changes"}
+                  </Button>
+                </div>
+              ) : null}
             </div>
           </form>
         </CardContent>
       </Card>
 
-      <Card className="border-destructive/40">
-        <CardHeader>
-          <CardTitle>Danger zone</CardTitle>
-          <CardDescription>
-            Deleting this product also soft-deletes all of its variants. The
-            storefront stops showing it immediately.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button
-            variant="destructive"
-            onClick={() => setConfirmOpen(true)}
-            disabled={deleteMutation.isPending}
-          >
-            Delete product
-          </Button>
-        </CardContent>
-      </Card>
+      {!isReadOnlyDemo ? (
+        <Card className="border-destructive/40">
+          <CardHeader>
+            <CardTitle>Danger zone</CardTitle>
+            <CardDescription>
+              Deleting this product also soft-deletes all of its variants. The
+              storefront stops showing it immediately.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="destructive"
+              onClick={() => setConfirmOpen(true)}
+              disabled={deleteMutation.isPending}
+            >
+              Delete product
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
-      <ConfirmDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
-        title="Delete this product?"
-        description={`"${product.name}" and all of its variants will be soft-deleted and hidden from the store.`}
-        confirmLabel="Delete product"
-        destructive
-        onConfirm={async () => {
-          await deleteMutation.mutateAsync().catch(() => undefined);
-        }}
-      />
+      {!isReadOnlyDemo ? (
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          title="Delete this product?"
+          description={`"${product.name}" and all of its variants will be soft-deleted and hidden from the store.`}
+          confirmLabel="Delete product"
+          destructive
+          onConfirm={async () => {
+            await deleteMutation.mutateAsync().catch(() => undefined);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

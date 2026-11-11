@@ -9,6 +9,7 @@ import {
   getCsrfToken,
 } from "./csrf";
 import { emitSessionExpired } from "./session-events";
+import { isAdminWriteBlocked } from "../demo";
 
 const WRITE_METHODS = new Set(["post", "patch", "put", "delete"]);
 
@@ -115,6 +116,16 @@ export async function resetAuthCookies(): Promise<void> {
 }
 
 http.interceptors.request.use((config) => {
+  // Public demo mode: hard-block mutating /admin/* requests client-side so a
+  // demo visitor can never even issue one (backend independently rejects
+  // them; see src/lib/demo.ts and backend middleware/demoMode.ts).
+  if (isAdminWriteBlocked(config.method, config.url)) {
+    return Promise.reject({
+      status: 403,
+      code: "DEMO_READ_ONLY",
+      message: "Demo mode is read-only — changes are disabled.",
+    });
+  }
   const method = config.method?.toLowerCase() ?? "";
   if (WRITE_METHODS.has(method)) {
     const token = getCsrfToken();
@@ -173,7 +184,16 @@ http.interceptors.response.use(
       return http.request(config);
     }
 
-    if (status === 401 && !(config as RetriableConfig | undefined)?._csrfProbe) {
+    // The session probe itself legitimately 401s for anonymous visitors and
+    // resolves to null upstream (features/auth/api.ts); emitting "session
+    // expired" for it would clear the query cache, retrigger the probe and
+    // loop forever. Only mid-session 401s on other endpoints signal expiry.
+    const url = (config?.url ?? "").split("?")[0] ?? "";
+    const isSessionProbe =
+      url === "/auth/session" &&
+      (config?.method ?? "get").toLowerCase() === "get";
+
+    if (status === 401 && !config?._csrfProbe && !isSessionProbe) {
       emitSessionExpired();
     }
 

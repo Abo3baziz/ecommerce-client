@@ -50,6 +50,7 @@ import { formatDate } from "@/lib/format";
 import { EditReviewDialog } from "@/features/admin/review-components/edit-review-dialog";
 import { ReviewDetailDialog } from "@/features/admin/review-components/review-detail-dialog";
 import { useUpdateSearchParams } from "@/features/admin/product-components/use-update-search-params";
+import { useSession } from "@/features/auth/session-context";
 
 const REVIEW_SORTS = ["created_at", "rating"] as const;
 const APPROVED_FILTERS: readonly ReviewApprovedFilter[] = [
@@ -125,6 +126,7 @@ function ReviewsTable() {
   const searchParams = useSearchParams();
   const updateParams = useUpdateSearchParams();
   const queryClient = useQueryClient();
+  const { isReadOnlyDemo } = useSession();
 
   const [editing, setEditing] = useState<AdminReviewRow | null>(null);
   const [viewing, setViewing] = useState<AdminReviewRow | null>(null);
@@ -416,58 +418,62 @@ function ReviewsTable() {
                         >
                           <Eye aria-hidden className="size-4" />
                         </TooltipIconButton>
-                        {dimmed ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled
-                            title="Deleted reviews cannot be approved"
-                          >
-                            <Check aria-hidden className="size-4" />
-                            Approve
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={toggleApprovalMutation.isPending}
-                            onClick={() =>
-                              toggleApprovalMutation.mutate({
-                                reviewId: review.public_id,
-                                next: !review.is_approved,
-                              })
-                            }
-                          >
-                            {review.is_approved ? (
-                              <>
-                                <X aria-hidden className="size-4" />
-                                Unapprove
-                              </>
-                            ) : (
-                              <>
+                        {!isReadOnlyDemo ? (
+                          <>
+                            {dimmed ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled
+                                title="Deleted reviews cannot be approved"
+                              >
                                 <Check aria-hidden className="size-4" />
                                 Approve
-                              </>
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={toggleApprovalMutation.isPending}
+                                onClick={() =>
+                                  toggleApprovalMutation.mutate({
+                                    reviewId: review.public_id,
+                                    next: !review.is_approved,
+                                  })
+                                }
+                              >
+                                {review.is_approved ? (
+                                  <>
+                                    <X aria-hidden className="size-4" />
+                                    Unapprove
+                                  </>
+                                ) : (
+                                  <>
+                                    <Check aria-hidden className="size-4" />
+                                    Approve
+                                  </>
+                                )}
+                              </Button>
                             )}
-                          </Button>
-                        )}
-                        <TooltipIconButton
-                          variant="outline"
-                          size="icon-sm"
-                          label="Edit review"
-                          onClick={() => setEditing(review)}
-                        >
-                          <Pencil aria-hidden className="size-4" />
-                        </TooltipIconButton>
-                        <TooltipIconButton
-                          variant="outline"
-                          size="icon-sm"
-                          className="text-destructive hover:text-destructive"
-                          label="Delete review"
-                          onClick={() => setDeleting(review)}
-                        >
-                          <Trash2 aria-hidden className="size-4" />
-                        </TooltipIconButton>
+                            <TooltipIconButton
+                              variant="outline"
+                              size="icon-sm"
+                              label="Edit review"
+                              onClick={() => setEditing(review)}
+                            >
+                              <Pencil aria-hidden className="size-4" />
+                            </TooltipIconButton>
+                            <TooltipIconButton
+                              variant="outline"
+                              size="icon-sm"
+                              className="text-destructive hover:text-destructive"
+                              label="Delete review"
+                              onClick={() => setDeleting(review)}
+                            >
+                              <Trash2 aria-hidden className="size-4" />
+                            </TooltipIconButton>
+                          </>
+                        ) : null}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -487,7 +493,7 @@ function ReviewsTable() {
         </>
       )}
 
-      {editing ? (
+      {editing && !isReadOnlyDemo ? (
         <EditReviewDialog
           open
           review={editing}
@@ -507,17 +513,19 @@ function ReviewsTable() {
         />
       ) : null}
 
-      <ConfirmDialog
-        open={deleting !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleting(null);
-        }}
-        title={`Delete this review by ${deleting?.customer_name ?? ""}?`}
-        description="The review is soft-deleted and disappears from the product page. You can still find it under “Include deleted”."
-        confirmLabel="Delete review"
-        destructive
-        onConfirm={handleDelete}
-      />
+      {!isReadOnlyDemo ? (
+        <ConfirmDialog
+          open={deleting !== null}
+          onOpenChange={(open) => {
+            if (!open) setDeleting(null);
+          }}
+          title={`Delete this review by ${deleting?.customer_name ?? ""}?`}
+          description="The review is soft-deleted and disappears from the product page. You can still find it under “Include deleted”."
+          confirmLabel="Delete review"
+          destructive
+          onConfirm={handleDelete}
+        />
+      ) : null}
     </div>
   );
 }

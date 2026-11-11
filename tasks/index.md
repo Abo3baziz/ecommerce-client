@@ -41,6 +41,7 @@ T00 ─► T01 ─► T02 ─► T03 ─► T04 ─► T06 ─┬─► T07 ─�
                                         └─► T17                  (admin ord/rev/usr)
 T18 last (depends on everything)
 System epic: T31 ─► T32 ─► (T33‖T34‖T35‖T36‖T37‖T38‖T39‖T40) after backend T-100..T-104
+Demo mode: T41 (client) pairs with backend T-108 (ENABLE_DEMO_MODE enforcement)
 ```
 
 Infra chain T00→T06 is strictly sequential. After T07 the storefront, account, and admin
@@ -91,6 +92,7 @@ tracks can proceed in parallel; admin tasks additionally need T05 (ImageKit) and
 | T38 | [T38-system-customer.md](T38-system-customer.md) | System: Customer Settings page (10 fields) | done |
 | T39 | [T39-system-security.md](T39-system-security.md) | System: Security page (overview + policies) | done |
 | T40 | [T40-system-admins-financial.md](T40-system-admins-financial.md) | System: Admin & Permissions + Financial pages | done |
+| T41 | [T41-public-demo-mode.md](T41-public-demo-mode.md) | Public read-only demo mode (recruiter access to /admin, backend-enforced) | done |
 
 ## Definition of Done (applies to every task)
 

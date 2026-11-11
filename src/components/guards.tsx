@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useSession } from "@/features/auth/session-context";
+import { DEMO_MODE } from "@/lib/demo";
 
 function GateLoader() {
   return (
@@ -84,7 +85,9 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
   const staffKnown = !adminProbePending;
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    // Demo mode: anonymous visitors go straight through (backend enforces
+    // read-only); only real sessions follow the normal login flow.
+    if (!isLoading && !user && !DEMO_MODE) {
       const from = encodeURIComponent(pathname);
       router.replace(`/login?from=${from}`);
     }
@@ -94,11 +97,30 @@ export function AdminGate({ children }: { children: React.ReactNode }) {
     return <GateLoader />;
   }
   if (!user) {
-    return <GateLoader />;
+    return DEMO_MODE ? <>{children}</> : <GateLoader />;
   }
   if (!isAdmin) {
     return (
       <ForbiddenCard message="This area is only available to store administrators." />
+    );
+  }
+  return <>{children}</>;
+}
+
+// Sections that stay private even in public demo mode (system settings with
+// provider secrets, staff accounts, the audit trail): the backend rejects
+// them outright; this gate shows a professional placeholder instead of an
+// error state when a demo visitor deep-links into one.
+export function DemoUnavailableGate({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { isReadOnlyDemo } = useSession();
+
+  if (isReadOnlyDemo) {
+    return (
+      <ForbiddenCard message="This section is not available in the public read-only demo." />
     );
   }
   return <>{children}</>;

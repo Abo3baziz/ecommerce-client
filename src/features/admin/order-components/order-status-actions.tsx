@@ -21,6 +21,7 @@ import type { OrderStatus } from "@/types/enums";
 import type { AdminOrderDetail } from "@/types/orders";
 import type { ApiError } from "@/types/envelopes";
 import { updateAdminOrderStatus } from "@/features/admin/orders-api";
+import { useSession } from "@/features/auth/session-context";
 
 const TRANSITION_LABELS: Record<OrderStatus, string> = {
   pending: "Mark as pending",
@@ -229,6 +230,20 @@ interface TransitionState {
 export function OrderStatusActions({ order }: { order: AdminOrderDetail }) {
   const [transition, setTransition] = useState<TransitionState | null>(null);
   const transitions = legalTransitions(order.status);
+  const { isReadOnlyDemo } = useSession();
+
+  // Demo visitors see the current status but no transition controls: status
+  // changes have stock/payment side effects that must stay admin-only.
+  if (isReadOnlyDemo) {
+    return (
+      <section className="rounded-lg border p-4">
+        <h2 className="text-sm font-medium">Status actions</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Status transitions are disabled in the read-only demo.
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section className="rounded-lg border p-4">

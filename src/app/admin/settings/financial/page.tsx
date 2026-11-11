@@ -33,7 +33,11 @@ const schema = z.object({
 });
 type FormValues = z.infer<typeof schema>;
 export default function FinancialSettingsPage() {
-  const { isSuperAdmin, superAdminProbePending } = useSession();
+  const { isSuperAdmin, superAdminProbePending, isReadOnlyDemo } = useSession();
+  // Private even in public demo mode: the backend rejects these reads.
+  if (isReadOnlyDemo) {
+    return <ForbiddenCard message="This section is not available in the public read-only demo." />;
+  }
   if (superAdminProbePending) return <div className="flex flex-col gap-4"><Skeleton className="h-8 w-56" /><Skeleton className="h-96 w-full" /></div>;
   if (!isSuperAdmin) return <ForbiddenCard message="System settings are only available to the platform super admin." />;
   return <FinancialForm />;
@@ -84,7 +88,7 @@ function FinancialForm() {
         <Card className="rounded-none"><CardHeader><CardTitle>Expense categories</CardTitle><CardDescription>Comma-separated. Superset of expense_category enum.</CardDescription></CardHeader><CardContent className="grid gap-2">
           <Label>Categories</Label><Input value={Array.isArray(form.watch("expense_categories")) ? (form.watch("expense_categories") as string[]).join(", ") : ""} onChange={(e) => form.setValue("expense_categories", e.target.value.split(",").map((s) => s.trim()).filter(Boolean), { shouldDirty: true })} placeholder="RENT, SALARIES, MARKETING, ..." />
         </CardContent></Card>
-        <div className="flex items-center gap-3"><Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">{mutation.isPending ? "Saving…" : "Save changes"}</Button>{isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}<Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button></div>
+        <div className="flex items-center gap-3"><Button type="submit" disabled={mutation.isPending || !isDirty} className="rounded-none">{mutation.isPending ? "Savingâ€¦" : "Save changes"}</Button>{isDirty && <span className="text-xs text-muted-foreground">Unsaved changes</span>}<Button type="button" variant="outline" className="rounded-none" onClick={() => form.reset()} disabled={!isDirty}>Reset</Button></div>
       </form>
     </div>
   );

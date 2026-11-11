@@ -38,6 +38,7 @@ import { AdjustInventoryDialog } from "@/features/admin/inventory-components/adj
 import { ReserveInventoryDialog } from "@/features/admin/inventory-components/reserve-inventory-dialog";
 import { CreateInventoryDialog } from "@/features/admin/inventory-components/create-inventory-dialog";
 import { useUpdateSearchParams } from "@/features/admin/product-components/use-update-search-params";
+import { useSession } from "@/features/auth/session-context";
 
 const STOCK_STATUSES = ["IN_STOCK", "LOW_STOCK", "OUT_OF_STOCK"] as const;
 const INVENTORY_SORTS = [
@@ -103,6 +104,7 @@ function InventoryTable({ onCreate }: { onCreate: () => void }) {
   const updateParams = useUpdateSearchParams();
   const [adjusting, setAdjusting] = useState<InventoryRecord | null>(null);
   const [reserving, setReserving] = useState<InventoryRecord | null>(null);
+  const { isReadOnlyDemo } = useSession();
 
   const page = parsePage(searchParams.get("page"));
   const searchTerm = searchParams.get("search") ?? "";
@@ -250,10 +252,12 @@ function InventoryTable({ onCreate }: { onCreate: () => void }) {
             title="No inventory records yet"
             description="Stock is never tracked automatically. Add variants to your products first, then create an inventory record for each variant you want to track."
             action={
-              <Button onClick={onCreate}>
-                <Plus className="size-4" aria-hidden />
-                Create a record
-              </Button>
+              !isReadOnlyDemo ? (
+                <Button onClick={onCreate}>
+                  <Plus className="size-4" aria-hidden />
+                  Create a record
+                </Button>
+              ) : undefined
             }
           />
         )
@@ -312,22 +316,24 @@ function InventoryTable({ onCreate }: { onCreate: () => void }) {
                     {formatDateTime(record.last_stock_update)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setAdjusting(record)}
-                      >
-                        Adjust
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setReserving(record)}
-                      >
-                        Reserve
-                      </Button>
-                    </div>
+                    {!isReadOnlyDemo ? (
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setAdjusting(record)}
+                        >
+                          Adjust
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setReserving(record)}
+                        >
+                          Reserve
+                        </Button>
+                      </div>
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))}
@@ -342,25 +348,29 @@ function InventoryTable({ onCreate }: { onCreate: () => void }) {
         </>
       )}
 
-      {adjusting ? (
-        <AdjustInventoryDialog
-          open
-          record={adjusting}
-          onOpenChange={(open) => {
-            if (!open) setAdjusting(null);
-          }}
-        />
-      ) : null}
+      {!isReadOnlyDemo ? (
+        <>
+          {adjusting ? (
+            <AdjustInventoryDialog
+              open
+              record={adjusting}
+              onOpenChange={(open) => {
+                if (!open) setAdjusting(null);
+              }}
+            />
+          ) : null}
 
-      {reserving ? (
-        <ReserveInventoryDialog
-          open
-          variantPublicId={reserving.public_id}
-          title={`${reserving.product_name} · ${reserving.sku}`}
-          onOpenChange={(open) => {
-            if (!open) setReserving(null);
-          }}
-        />
+          {reserving ? (
+            <ReserveInventoryDialog
+              open
+              variantPublicId={reserving.public_id}
+              title={`${reserving.product_name} · ${reserving.sku}`}
+              onOpenChange={(open) => {
+                if (!open) setReserving(null);
+              }}
+            />
+          ) : null}
+        </>
       ) : null}
     </div>
   );
@@ -368,6 +378,7 @@ function InventoryTable({ onCreate }: { onCreate: () => void }) {
 
 function InventoryPageContent() {
   const [createOpen, setCreateOpen] = useState(false);
+  const { isReadOnlyDemo } = useSession();
 
   return (
     <div className="flex flex-col gap-6">
@@ -378,13 +389,17 @@ function InventoryPageContent() {
             Track stock per variant — on hand, reserved and available.
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="size-4" aria-hidden />
-          New record
-        </Button>
+        {!isReadOnlyDemo ? (
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" aria-hidden />
+            New record
+          </Button>
+        ) : null}
       </div>
       <InventoryTable onCreate={() => setCreateOpen(true)} />
-      <CreateInventoryDialog open={createOpen} onOpenChange={setCreateOpen} />
+      {!isReadOnlyDemo ? (
+        <CreateInventoryDialog open={createOpen} onOpenChange={setCreateOpen} />
+      ) : null}
     </div>
   );
 }
