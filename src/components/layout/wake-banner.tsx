@@ -2,49 +2,43 @@
 
 import { useSyncExternalStore } from "react";
 import { Clock, X } from "lucide-react";
-import { SERVER_AWAKE_EVENT } from "@/lib/api/axios-instance";
 
 /**
  * Simple top-of-site notice that the demo backend sleeps when idle and the
  * first request can take up to ~50 seconds (free-tier cold start).
  *
- * Session-scoped: hidden once the user dismisses it, and auto-hidden for the
- * rest of the tab session once any real API response arrives (the axios
- * interceptor marks `demo:server-awake` and dispatches the wake event).
- * Both flags live in sessionStorage, so the banner reappears only on a fresh
- * tab — when a cold start is actually likely.
+ * Session-scoped: it stays visible until the visitor dismisses it — it never
+ * auto-hides, so on a fast server it still reads as a demo notice rather
+ * than flashing away. The dismissed flag lives in sessionStorage, so the
+ * banner returns only on a fresh tab.
  */
 
-const SERVER_AWAKE_KEY = "demo:server-awake";
 const DISMISSED_KEY = "demo:wake-banner-dismissed";
 const DISMISS_EVENT = "demo:wake-banner-dismissed";
 
-function isHidden(): boolean {
+function isDismissed(): boolean {
   try {
-    return (
-      sessionStorage.getItem(SERVER_AWAKE_KEY) === "1" ||
-      sessionStorage.getItem(DISMISSED_KEY) === "1"
-    );
+    return sessionStorage.getItem(DISMISSED_KEY) === "1";
   } catch {
     return false;
   }
 }
 
-function subscribeHidden(callback: () => void): () => void {
-  window.addEventListener(SERVER_AWAKE_EVENT, callback);
+function subscribeDismissed(callback: () => void): () => void {
   window.addEventListener(DISMISS_EVENT, callback);
-  return () => {
-    window.removeEventListener(SERVER_AWAKE_EVENT, callback);
-    window.removeEventListener(DISMISS_EVENT, callback);
-  };
+  return () => window.removeEventListener(DISMISS_EVENT, callback);
 }
 
 export function WakeBanner() {
   // Server snapshot `true` keeps SSR/hydration safe; the banner then appears
   // (or stays hidden) based on the client's sessionStorage after hydration.
-  const hidden = useSyncExternalStore(subscribeHidden, isHidden, () => true);
+  const dismissed = useSyncExternalStore(
+    subscribeDismissed,
+    isDismissed,
+    () => true,
+  );
 
-  if (hidden) {
+  if (dismissed) {
     return null;
   }
 
